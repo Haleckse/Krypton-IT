@@ -15,8 +15,8 @@ int main(){
 
     printf("--- début programme ---\n\n");
 
-    unsigned char key[] = ""; 
-    char *message = malloc((TAILLE_BLOC) * sizeof(unsigned char));
+    unsigned char* key = (unsigned char*)malloc((TAILLE_BLOC) * sizeof(char)); 
+    char* message = malloc((TAILLE_BLOC) * sizeof(char));
     char* fich_crypt = "crypte.txt";
     char* fich_decrypt = "decrypte.txt";
         
