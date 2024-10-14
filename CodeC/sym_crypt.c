@@ -11,39 +11,36 @@
 
 // Main du Programme 
 //
-int main(){
+int main(int argc, char* argv[]){
+    if (argc > 2){
+        perror(argv[0]);
+    }
 
-    printf("--- début programme ---\n\n");
+    printf("--- début programme ---\n");
 
-    unsigned char* key = (unsigned char*)malloc((TAILLE_BLOC) * sizeof(char)); 
-    char* message = malloc((TAILLE_BLOC) * sizeof(char));
-    char* fich_crypt = "crypte.txt";
-    char* fich_decrypt = "decrypte.txt";
+    unsigned char* key = (unsigned char*)malloc((TAILLE_BLOC) * sizeof(char));
+    char* message = argv[1];
+    char* fich_crypt = "bin/crypte.txt";
+    char* fich_decrypt = "bin/decrypte.txt";
         
+    // Generation de la clé aleatoire stoké dans la variable "key"
     gen_key(10, key);
 
-    // Recuperation du fichier contenant le message à chiffrer
-    printf("Saisir le nom du fichier contenant le message : ");
-
-    if (scanf("%s", message) > 0){
-        printf("\n°°°°°° Traitement en cours °°°°°°\n");
-    } else {
-        printf("\nMauvais paramètre d'entrée ...\n");
-    }
-
+    printf("\n°°°°°° Traitement en cours °°°°°°\n");
+   
     // Verification de la terminaison correcte du chiffrage
     if (xor_fichier(message, fich_crypt, key) == -1){
-        perror("Erreur lors du chiffrage :");
-        //exit(1);
+        perror("Erreur lors du chiffrage");
     }
 
-    // Verification de la terminaison correcte du dechiffrage
+    // // Verification de la terminaison correcte du dechiffrage
     if (xor_fichier(fich_crypt, fich_decrypt, key) == -1){
-        perror("erreur de dechiffrage :");
+        perror("erreur de dechiffrage");
     }
 
     printf("\n--- Fin programme ---\n");
 
-    free(message);
+    mask("Datas/Source/msg1.txt", "test.txt");
+
     return 0;
 }

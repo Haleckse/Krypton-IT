@@ -70,7 +70,6 @@ int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key){
     int fichier_msg = open(fich_in, O_RDONLY);
     if(fichier_msg == -1){
         perror("Erreur ouverture fichier message");
-        return -1;
     }
 
     // Ouverture ou création du fichier qui recevra le message chiffré
@@ -78,7 +77,6 @@ int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key){
     if(fichier_crypt == -1){
         perror("Erreur ouverture fichier crypte");
         close(fichier_msg);
-        return -1;
     }
 
     while((nbLus == nbEcrit) && (nbLus = read(fichier_msg, bloc, TAILLE_BLOC))>0){
@@ -97,6 +95,47 @@ int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key){
 }
 
 // Fonction permettant la réalisation du chiffrement de Vernam
+// Les fichiers seront ouverts dans la fonctions
 //
-char* mask();
+int mask(const char* fich_in, const char* fich_out){
+    /* Ouverture fichiers */
+    FILE* msg = fopen(fich_in, "r");
+    FILE* crypt = fopen(fich_out, "w");
+    FILE* log_key = fopen("log_key.txt", "a");
+    
+    /* Initialisation des variables */
+    int len_msg = strlen(fich_in);
+    char msg_crypt[len_msg];
+    char buffer[len_msg];
+    unsigned char key[len_msg];
+
+    if (msg != NULL){
+        /* Initialisation */
+        gen_key(len_msg, key);
+        int len_key = strlen((char*) key);
+
+        /* Lecture du message crypté*/
+        fread(buffer, 1, len_msg, msg);
+
+        for(int i = 0; i < len_msg; i++){
+            msg_crypt[i] = (buffer[i] ^ key[i]);
+        }
+
+        /* Ecriture message crypté */
+        fwrite(msg_crypt, 1, len_msg, crypt);
+
+        /* Strockage de la cle dans le log */
+        fwrite(key, 1, len_key, log_key);
+
+        /* Fermeture Fichiers */
+        fclose(msg);
+        fclose(crypt);
+        fclose(log_key);
+    } else {
+        /* Erreur ouverture fichier */
+        return -1;
+    }
+
+    return 0;
+}
 

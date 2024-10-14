@@ -1,5 +1,6 @@
 #ifndef _CHIFFRAGE_H
 #define _CHIFFRAGE_H
+
 #include <stdbool.h>
 
 /* ============================================================================== */
@@ -42,13 +43,24 @@ void gen_key(int len, unsigned char *key);
  */
 int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key);
 
+
 /**
  *  @brief Fonction permettant le decryptage a partir d'un fichier
  *  Les fichiers seront ouverts dans la fonctions
- *  @param : cle de dechiffrage (:String)
+ *  @param: Nom du fichier (:String) 
+ *          cle de dechiffrage (:String), 
  *  @return 0 si succes, -1 sinon 
  */
 int dechiffrage_char_fichier(char* nom_fichier, char* key);
+
+
+/**
+ *  @brief Fonction permettant le cryptage en utilisant la notion de
+ *  maque jetable (cf chiffrement de Vernam).
+ *  @param : Nom du fichier (:String), taille de la cle (:int)
+ *  @return 0 si succes, -1 sinon 
+ */
+int mask(const char* fich_in, const char* fich_out);
 
 /** @} */
 

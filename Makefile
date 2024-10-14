@@ -5,7 +5,7 @@ DOC_DIR = Documents
 DAT_DIR = Datas/Source
 BIN_DIR = bin
 CC = gcc
-CFLAGS = -std=c99 -Wextra -Wall -Werror -pedantic 
+CFLAGS = -std=c99 -pedantic 
 LDFLAGS = -lm
 
 ECHO = @
@@ -50,9 +50,9 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 .PHONY: clean mrproper doc
 
 clean:
-	$(ECHO)rm -rf $(OBJ_DIR)/*.o
-	rm -f $(EXEC) $(OBJ)
-
+	rm -rf $(OBJ_DIR)/*.o
+	rm -f $(BIN_DIR)/*
+	
 # Nettoyage complet : supprime aussi l'exécutable et la documentation
 mrproper: clean
 	$(ECHO)rm -rf $(BIN_DIR)/* $(DOC_DIR)/html $(OBJ_DIR)
