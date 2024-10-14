@@ -1,7 +1,11 @@
 CC=gcc
-CFLAGS=-std=c99 -pedantic
-LDFLAGS=-lm 
+CFLAGS=-std=c99 -Wextra -Wall -Werror -pedantic 
+LDFLAGS=-lm
 
+ECHO = @
+ifeq ($(VERBOSE),1)
+	ECHO=
+endif
 
 ifeq ($(DEBUG),yes)
 	CFLAGS += -g
@@ -11,30 +15,35 @@ else
 	LDFLAGS +=
 endif
 
-EXEC= main
+EXEC=sym_crypt
 SRC= $(wildcard *.c)
 OBJ= $(SRC:.c=.o)
 
+all: 
+ifeq ($(DEBUG),yes)
+	@echo "Generating in debug mode"
+else
+	@echo "Generating in release mode"
+endif
+	@$(MAKE) $(EXEC)
+
 $(EXEC): $(OBJ)
-	@$(CC) -o $@ $^ $(LDFLAGS)
+	$(ECHO)$(CC) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
-	@$(CC) -o $@ -c $< $(CFLAGS)
+	$(ECHO)$(CC) -o $@ -c $< $(CFLAGS)
 
 .PHONY: clean mrproper
 
 clean:
-	@rm -rf *.o
-	@rm -f bin/* $(FILESDIR)/out.*
+	$(ECHO)rm -rf *.o
 
 mrproper: clean
-	@rm -rf $(EXEC) documentation/html *.dot *.pdf
+	$(ECHO)rm -rf $(EXEC) documentation/html
 
-chiffrage.o : chiffrage_cryptographie.h
-main.o : chiffrage.o main_chiffrage.o
+doc: stack.h
+	$(ECHO)doxygen documentation/TP2
+	
+chiffrage_cryptographie.o: chiffrage_cryptographie.h 
 
-DELIVER_FMT=$(shell date "+$(shell id -un)_%d-%m-%y_%Hh%Mm%Ss")
-
-deliver:
-	zip -r $(DELIVER_FMT).zip .
-
+sym_crypt.o: chiffrage_cryptographie.h

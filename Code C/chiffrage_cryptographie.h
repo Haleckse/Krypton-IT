@@ -13,7 +13,7 @@
  *  @param : taille du message (:int), variable qui contiendra le chiffrage (:String)
  *  @return null
  */
-void xor(char* msg, char* key, int msg_length, char* crypted);
+void xor(unsigned char* msg, unsigned char* key, int msg_length, char* crypted);
 
 
 /**
@@ -22,7 +22,8 @@ void xor(char* msg, char* key, int msg_length, char* crypted);
  *  @param : taille du message (:int), variable qui contiendra le dechiffrage (:String)
  *  @return null
  */
-char* gen_key(int length);
+void gen_key(int len, unsigned char *key);
+
 
 /**
  *  @brief Fonction permettant l'affiche sur STDOUT du message 
@@ -39,8 +40,7 @@ char* gen_key(int length);
  *  @param : nom du fichier msg (:String), cle de chiffrage (:String)
  *  @return 0 si succes, -1 sinon 
  */
-int xor_fichier(char* fichier_msg, char* fichier_out, char* key);
-
+int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key);
 
 /**
  *  @brief Fonction permettant le decryptage a partir d'un fichier

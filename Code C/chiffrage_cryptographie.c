@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include "chiffrage_cryptographie.h"
 
@@ -19,39 +20,28 @@
 // Fonction permettant de chiffrer un message caractères a caractères
 // Retour de la fonction : message codé dans la variable crypted (code ASCII)
 //
-void xor(char* msg, char* key, int msg_length, char* crypted){
+void xor(unsigned char* msg, unsigned char* key, int msg_length, char* crypted){
+    
+    int len_key = strlen((const char *)key);
 
-     for (int i=0; i<msg_length; i++)
-        crypted[i] = (msg[i] ^ key[i%strlen(key)]);
-        printf("Hello\n");
+    for (int i=0; i<msg_length; i++){
+        crypted[i] = (msg[i] ^ key[i%len_key]);
+    }
 }
 
 
 // Fonction permettant de déchiffrer un code crypte avec la cle (key)
 // Retour de la fonction : message décodé dans la variable decrypted (code ASCII)
 // 
-char* gen_key(int length) {
-    if (length <= 0) {
-        return NULL;
-    }
+void gen_key(int len, unsigned char *key){
+  srand(time(0));
 
-    // Définition des caractères alphanumériques
-    const char characters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    int num_chars = sizeof(characters) - 1; 
+  for(int i = 0; i < len; i++){
+    unsigned char random_char = (unsigned char)(rand() % 256);
+    key[i] = random_char;
+  }
 
-    char* key = (char*)malloc((length + 1) * sizeof(char)); 
-    if (key == NULL) {
-        return NULL;
-    }
-
-    // Génération de la clé
-    for (int i = 0; i < length; i++) {
-        key[i] = characters[rand() % num_chars];
-    }
-
-    key[length] = '\0';
-
-    return key;
+  key[len] = '\0';
 }
 
 
@@ -71,9 +61,9 @@ void afficher_message(char* affiche_msg){
 // Fonction permettant le cryptage à partir d'un fichier
 // Les fichiers seront ouverts dans la fonctions
 // 
-int xor_fichier(char* fich_in, char* fichier_out, char* key){
+int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key){
     int nbEcrit=0, nbLus=0;
-    char bloc[TAILLE_BLOC];
+    unsigned char bloc[TAILLE_BLOC];
     char bloc_crypt[TAILLE_BLOC];
 
     // Ouverture du fichier contenant le message à chiffrer
