@@ -1,0 +1,4 @@
+Le texte doit etre sans accent et ne comporter aucun caractere de controle. Cela ne va pas
+gener le programme de chiffrement et dechiffrement. Par contre, le programme de crack, face
+au chiffre d'un caractere de controle, va eliminer toutes les options pour la clef car il
+cherche une clef qui donne un caractere alphanumerique ou un espace ou de la ponctuation.

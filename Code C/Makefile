@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c99 -W -pedantic
+CFLAGS=-std=c99 -pedantic
 LDFLAGS=-lm 
 
 

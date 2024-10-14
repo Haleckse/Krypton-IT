@@ -4,7 +4,7 @@
 long random_long(long min,long max);
 int rabin (long a, long n) ;
 long puissance_mod_n (long a, long e, long n);
-void xor(char *msg, char* key,int msg_length,char *crypted);
+// void xor(char *msg, char* key,int msg_length,char *crypted);
 long generePremierRabin(long min,long max,int *cpt);
 long seek_generator(long start,long p);
 int nb_digit_base10(long n);

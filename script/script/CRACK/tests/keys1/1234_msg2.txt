@@ -1,0 +1,14 @@
+
+Attaque brutale avec dico : c1, c2, c3 enchaînées...
+==>dico name = ../../Dicos/dicoFrSA.txt
+Créé et initialisé
+Début de C1...
+Fin de C1
+Début de C2...
+ici
+Fin de C2
+
+Nombre de clefs = 58212
+Début de C3...
+Meilleur score = 29
+Fin de C3 : meilleure clef = 1234 

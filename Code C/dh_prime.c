@@ -49,7 +49,7 @@ int rabin (long a, long n) {
   /// \brief c'est un test statistique. Il est plus rapide que le précédent.
   /// \param[in] a : on met 2, ça marche
   /// \param[in] n : le nombre à tester
-  /// \returns 1 il est premeir, 0 sinon
+  /// \returns 1 il est premier, 0 sinon
   long p, e, m;
   int i, k;
 
