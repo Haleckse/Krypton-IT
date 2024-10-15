@@ -1,46 +1,96 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <getopt.h>
 
 #include "chiffrage_cryptographie.h"
 
-// Fonction utilisant le getopt() pour extraire les différents composants
-// int getopt(int argc, char * const argv[], const char *optstring);
-// while ( (getopt() != -1) )
-// test if() sur chaque option (-i, -o, -k/-f, -m, -v, -l, -h)
+/* ============================================================================== */
+/* ============================================================================== */
+
 
 // Main du Programme 
 //
 int main(int argc, char* argv[]){
-    if (argc > 2){
-        perror(argv[0]);
-    }
-
+    
     printf("--- début programme ---\n");
 
-    unsigned char* key = (unsigned char*)malloc((TAILLE_BLOC) * sizeof(char));
-    char* message = argv[1];
-    char* fich_crypt = "bin/crypte.txt";
-    char* fich_decrypt = "bin/decrypte.txt";
-        
-    // Generation de la clé aleatoire stoké dans la variable "key"
-    gen_key(10, key);
+    /* Variables nécessaire au programme*/
+    unsigned char* key; 
+    char* fich_in; char* fich_out;
+    char* methode_crypt; char* fich_vecteur;
+    
+    char optstring[] = ":i:o:k:f::m:v::l::h::";
+    int opt; int vflag = 0;
+    extern char *optarg;
+    extern int optind, optopt;
 
-    printf("\n°°°°°° Traitement en cours °°°°°°\n");
-   
-    // Verification de la terminaison correcte du chiffrage
-    if (xor_fichier(message, fich_crypt, key) == -1){
-        perror("Erreur lors du chiffrage");
-    }
+    /* Traitement des données en Entrée */
+    while((opt = getopt(argc, argv, optstring)) != -1)  
+    {  
+        switch(opt)  
+        {  
+            case 'i': 
+                fich_in = optarg;
+                break; 
+            case 'o': 
+                fich_out = optarg;
+                break; 
+            case 'k':  
+                key = (unsigned char*)optarg;
+                break;  
+            case 'f':
+            case 'm':  
+                methode_crypt = optarg;
+                break;  
+            case 'v':
+                vflag = 1;
+                fich_vecteur = optarg;
+            case 'l':  
+            case 'h':  
+            
+            /* Default cases */
+            case ':':  
+                printf("option needs a value\n");  
+                break;  
+            case '?':  
+                printf("unknown option: %c\n", optopt); 
+                break;  
+        }  
+    }  
+  
+    /* extras arguments */
+    for(; optind < argc; optind++){      
+        printf("extra arguments: %s\n", argv[optind]);  
+    } 
 
-    // // Verification de la terminaison correcte du dechiffrage
-    if (xor_fichier(fich_crypt, fich_decrypt, key) == -1){
-        perror("erreur de dechiffrage");
+    /* Choix de la méthode de chiffrement/déchiffrement */
+    printf("\n ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
+
+    if ( methode_crypt == "cbc-crypt" || methode_crypt == "cbc-decrypt"){
+        /* Check vecteur initialisation present */
+        if (vflag != 1) {
+            fprintf(stderr,"Erreur, manque le vecteur d'initialisation methode CBC");
+            exit(EXIT_FAILURE);
+        } else {
+            /* Methodes CBC*/
+            if (methode_crypt == "cbc-crypt"){
+                // fonction
+            } else {
+                // fonction
+            }
+        }
+    } else {
+        /* Methodes XOR ou MASK*/
+        if (methode_crypt = "xor"){
+            xor_fichier(fich_in, fich_out, key);
+        } else {
+            mask(fich_in, fich_out);
+        }
     }
 
     printf("\n--- Fin programme ---\n");
-
-    mask("Datas/Source/msg1.txt", "test.txt");
 
     return 0;
 }

@@ -1,2 +1,0 @@
-Ceci est un texte sans accent. La gestion de l'unicode est plus difficile. Pour le crack,
-comme c'est statistique il faut un texte le plus long possible (loi des grands nombres).

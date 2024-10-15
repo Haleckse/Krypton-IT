@@ -115,7 +115,9 @@ int mask(const char* fich_in, const char* fich_out){
         int len_key = strlen((char*) key);
 
         /* Lecture du message crypté*/
-        fread(buffer, 1, len_msg, msg);
+        if (fread(buffer, 1, len_msg, msg) < len_msg){
+            perror("fread");
+        }
 
         for(int i = 0; i < len_msg; i++){
             msg_crypt[i] = (buffer[i] ^ key[i]);
@@ -125,6 +127,7 @@ int mask(const char* fich_in, const char* fich_out){
         fwrite(msg_crypt, 1, len_msg, crypt);
 
         /* Strockage de la cle dans le log */
+        fwrite("\n", 1, 1, log_key);
         fwrite(key, 1, len_key, log_key);
 
         /* Fermeture Fichiers */
