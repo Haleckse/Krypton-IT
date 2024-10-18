@@ -16,40 +16,55 @@ int main(int argc, char* argv[]){
     
     printf("--- début programme ---\n");
 
-    /* Variables nécessaire au programme*/
+    /* Necessary variables for the program */
     unsigned char* key; 
     char* fich_in; char* fich_out;
-    char* methode_crypt; char* fich_vecteur;
+    char* methode_crypt; 
+    unsigned char* fich_vecteur;
     
     char optstring[] = ":i:o:k:f::m:v::l::h::";
-    int opt; int vflag = 0;
+    int opt; 
     extern char *optarg;
     extern int optind, optopt;
+    int vflag = 0, hflag = 0;
 
-    /* Traitement des données en Entrée */
+    /* Datas processing */
     while((opt = getopt(argc, argv, optstring)) != -1)  
     {  
         switch(opt)  
         {  
             case 'i': 
+            /* Input file*/
                 fich_in = optarg;
                 break; 
             case 'o': 
+            /* Output file */
                 fich_out = optarg;
                 break; 
             case 'k':  
+            /* Enter key for crypting */
                 key = (unsigned char*)optarg;
                 break;  
             case 'f':
+
+
             case 'm':  
+            /* Select method */
                 methode_crypt = optarg;
                 break;  
             case 'v':
+            /* vector cbc file */
                 vflag = 1;
-                fich_vecteur = optarg;
-            case 'l':  
+                fich_vecteur = (unsigned char*) optarg;
+                break;
+            case 'l': 
+            /* Log file if needed */ 
+        
             case 'h':  
-            
+            /* stdout for commands */
+                hflag = 1;
+                break;
+
             /* Default cases */
             case ':':  
                 printf("option needs a value\n");  
@@ -65,32 +80,37 @@ int main(int argc, char* argv[]){
         printf("extra arguments: %s\n", argv[optind]);  
     } 
 
-    /* Choix de la méthode de chiffrement/déchiffrement */
-    printf("\n ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
-
-    if ( methode_crypt == "cbc-crypt" || methode_crypt == "cbc-decrypt"){
-        /* Check vecteur initialisation present */
-        if (vflag != 1) {
-            fprintf(stderr,"Erreur, manque le vecteur d'initialisation methode CBC");
-            exit(EXIT_FAILURE);
-        } else {
-            /* Methodes CBC*/
-            if (methode_crypt == "cbc-crypt"){
-                // fonction
-            } else {
-                // fonction
-            }
-        }
+    if (hflag == 1){
+        commandes_affichage();
     } else {
-        /* Methodes XOR ou MASK*/
-        if (methode_crypt = "xor"){
-            xor_fichier(fich_in, fich_out, key);
+        /* pick the method asked by the user */
+        printf("\n ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
+
+        if ( methode_crypt == "cbc-crypt" || methode_crypt == "cbc-decrypt"){
+            /* Check initialisating vector if present */
+            if (vflag != 1) {
+                fprintf(stderr,"Erreur, manque le vecteur d'initialisation methode CBC");
+                exit(EXIT_FAILURE);
+            } else {
+                /* CBC Methods */
+                if (methode_crypt == "cbc-crypt"){
+                    //cbc_crypt((unsigned char*)fich_in, key, fich_vecteur, (unsigned char*)fich_out);
+                } else {
+                    // fonction
+                }
+            }
         } else {
-            mask(fich_in, fich_out);
+            /* XOR or MASK Methods */
+            if (methode_crypt = "xor"){
+                xor_fichier(fich_in, fich_out, key);
+            } else {
+                mask(fich_in, fich_out);
+            }
         }
     }
 
     printf("\n--- Fin programme ---\n");
 
+    /* End of the program */
     return 0;
 }

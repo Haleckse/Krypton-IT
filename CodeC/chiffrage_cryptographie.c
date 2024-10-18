@@ -35,9 +35,10 @@ void xor(unsigned char* msg, unsigned char* key, int msg_length, char* crypted){
 // 
 void gen_key(int len, unsigned char *key){
   srand(time(0));
+  unsigned char random_char;
 
   for(int i = 0; i < len; i++){
-    unsigned char random_char = (unsigned char)(rand() % 256);
+    random_char = (unsigned char)(rand() % 256);
     key[i] = random_char;
   }
 
@@ -58,8 +59,24 @@ void afficher_message(char* affiche_msg){
 }
 
 
+// Fonction affichant sur Stdout l'aide des commandes
+// ParamIn null ; ParamOut message stdout
+//
+void commandes_affichage(){
+    printf("\n\t--- AIDE DES COMMADES ---\n\n");
+    printf("_ -i : fichier contenant le message (obligatoire)\n");
+    printf("_ -o : fichier où l’on va écrire le chiffré (obligatoire)\n");
+    printf("_ -k : clef chiffrement (obligatoire)\n");
+    printf("       ou -f : fichier contenant la clef \n");
+    printf("_ -m : fichier contenant la méthode de chiffrement (obligatoire)\n");
+    printf("_ -v : fichier contenant le vecteur initialisation (CBC)\n");
+    printf("_ -l : fichier log (facultatif)\n");
+    printf("_ -h : affichage aide de commande\n");   
+}
+
+
 // Fonction permettant le cryptage à partir d'un fichier
-// Les fichiers seront ouverts dans la fonctions
+// Les fichiers seront ouverts dans la fonction
 // 
 int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key){
     int nbEcrit=0, nbLus=0;
@@ -94,8 +111,9 @@ int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key){
     return -1;
 }
 
+
 // Fonction permettant la réalisation du chiffrement de Vernam
-// Les fichiers seront ouverts dans la fonctions
+// Les fichiers seront ouverts dans la fonction
 //
 int mask(const char* fich_in, const char* fich_out){
     /* Ouverture fichiers */
@@ -142,3 +160,59 @@ int mask(const char* fich_in, const char* fich_out){
     return 0;
 }
 
+
+// Fonction réalisant le chiffrement de la méthode CBC 
+// Fichiers ouverts dans la fonction
+//
+void cbc_crypt(unsigned char *msg, unsigned char* key,unsigned char* iv, unsigned char* res);
+// {
+//     FILE* fichier_in = fopen(msg, "r");
+//     FILE* fichier_out = fopen(res, "w");
+//     FILE* fichier_vecteur = fopen(iv, "r");
+    
+//     int indice_vecteur = 0;
+//     char* buffer;
+
+//     while (fread(buffer, 1, 16, fichier_in) > 0){
+
+//     }
+
+
+    /*int j = 0;
+    for(int i = 0; i < size; i++){
+        if (j == 16){
+            j = 0;
+        }
+        if (i < 16){
+            res[i] = msg[i] ^ iv[i];
+        } else {
+            res[i] = msg[i] ^ res[i-16];
+        }
+            res[i] ^= key[j];
+            j++;
+  }*/
+//}
+
+
+void cbc_decrypt(unsigned char *msg, unsigned char *key, unsigned char *iv, size_t size, unsigned char *res);
+// {
+//   unsigned char temp_block[16];
+//   unsigned char prev_block[16];
+//   for (int i = 0; i < size; i += 16){
+//     memcpy(temp_block, msg + i, 16);
+//     for (int j = 0; j < 16; j++){
+//       res[i + j] = msg[i + j] ^ key[j];
+//     }
+//     if (i == 0){
+//       for(int j = 0; j < 16; j++){
+//         res[j] ^= iv[j];
+//       }
+//     }
+//     else{
+//       for (int j = 0; j < 16; j++) {
+//         res[i + j] ^= prev_block[j];
+//       }
+//     }
+//     memcpy(prev_block, temp_block, 16);
+//   }
+// }
