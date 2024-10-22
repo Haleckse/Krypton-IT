@@ -80,7 +80,7 @@ int mask(const char* fich_in, const char* fich_out);
  *  @param : fichier où l'on va écrire le chiffré 
  *  @return  null
  */
-void cbc_crypt(unsigned char *msg, unsigned char* key,unsigned char* iv, unsigned char* res);
+void cbc_crypt(char *msg, unsigned char* key,char* iv, char* res);
 
 
 /** @} */

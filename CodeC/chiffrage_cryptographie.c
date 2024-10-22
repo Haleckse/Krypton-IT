@@ -164,18 +164,39 @@ int mask(const char* fich_in, const char* fich_out){
 // Fonction réalisant le chiffrement de la méthode CBC 
 // Fichiers ouverts dans la fonction
 //
-void cbc_crypt(unsigned char *msg, unsigned char* key,unsigned char* iv, unsigned char* res);
-// {
-//     FILE* fichier_in = fopen(msg, "r");
-//     FILE* fichier_out = fopen(res, "w");
-//     FILE* fichier_vecteur = fopen(iv, "r");
+#define BLOC_OCTETS 16
+void cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
+{
+
+    FILE* fichier_in = fopen(msg, "r");
+    FILE* fichier_out = fopen(res, "w");
+    FILE* fichier_vecteur = fopen(iv, "r");
     
-//     int indice_vecteur = 0;
-//     char* buffer;
+    int nbLus, indice_vecteur = 0;
+    unsigned char* buffer;
+    unsigned char* iv_key;
+    char* chiffree;
+    char* tampon;
 
-//     while (fread(buffer, 1, 16, fichier_in) > 0){
+    while (nbLus = fread((char*)buffer, 1, BLOC_OCTETS, fichier_in) > 0){
+        
+        /* Chiffrement du premier bloc du message */
+        if (indice_vecteur == 0){
+            if(fread(iv_key, 1, BLOC_OCTETS, fichier_vecteur) <= 0){
+                perror("erreur lecture fichier vecteur");
+            }
 
-//     }
+            xor(buffer, (unsigned char*) iv_key, BLOC_OCTETS, tampon);
+            xor((unsigned char*)tampon, key, BLOC_OCTETS, chiffree);
+
+            indice_vecteur = 1;
+        /* Chiffrement du reste du message */
+        } else {
+            xor(buffer, (unsigned char*)chiffree, BLOC_OCTETS, tampon);
+            xor((unsigned char*)tampon, key, BLOC_OCTETS, chiffree);
+        }
+        fwrite(chiffree, 1, BLOC_OCTETS, fichier_out);
+    }
 
 
     /*int j = 0;
@@ -191,7 +212,7 @@ void cbc_crypt(unsigned char *msg, unsigned char* key,unsigned char* iv, unsigne
             res[i] ^= key[j];
             j++;
   }*/
-//}
+}
 
 
 void cbc_decrypt(unsigned char *msg, unsigned char *key, unsigned char *iv, size_t size, unsigned char *res);

@@ -86,15 +86,15 @@ int main(int argc, char* argv[]){
         /* pick the method asked by the user */
         printf("\n ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
 
-        if ( methode_crypt == "cbc-crypt" || methode_crypt == "cbc-decrypt"){
+        if ( (methode_crypt = "cbc-crypt")|| (methode_crypt = "cbc-decrypt") ){
             /* Check initialisating vector if present */
             if (vflag != 1) {
-                fprintf(stderr,"Erreur, manque le vecteur d'initialisation methode CBC");
+                fprintf(stderr,"\nErreur, manque le vecteur d'initialisation methode CBC\n");
                 exit(EXIT_FAILURE);
             } else {
                 /* CBC Methods */
-                if (methode_crypt == "cbc-crypt"){
-                    //cbc_crypt((unsigned char*)fich_in, key, fich_vecteur, (unsigned char*)fich_out);
+                if (methode_crypt = "cbc-crypt"){
+                    cbc_crypt(fich_in, key, (char*)fich_vecteur, fich_out);
                 } else {
                     // fonction
                 }
