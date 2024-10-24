@@ -78,7 +78,7 @@ void commandes_affichage(){
 // Fonction permettant le cryptage à partir d'un fichier
 // Les fichiers seront ouverts dans la fonction
 // 
-int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key){
+int xor_fichier(const char* fich_in, const char* fichier_out, unsigned char* key){
     int nbEcrit=0, nbLus=0;
     unsigned char bloc[TAILLE_BLOC];
     char bloc_crypt[TAILLE_BLOC];
@@ -165,75 +165,88 @@ int mask(const char* fich_in, const char* fich_out){
 // Fichiers ouverts dans la fonction
 //
 #define BLOC_OCTETS 16
-void cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
+int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
 {
-
+    /* Ouverture des différents fichiers utilisés */
     FILE* fichier_in = fopen(msg, "r");
     FILE* fichier_out = fopen(res, "w");
     FILE* fichier_vecteur = fopen(iv, "r");
-    
-    int nbLus, indice_vecteur = 0;
-    unsigned char* buffer;
-    unsigned char* iv_key;
-    char* chiffree;
-    char* tampon;
 
-    while (nbLus = fread((char*)buffer, 1, BLOC_OCTETS, fichier_in) > 0){
+    if (fichier_in == NULL || fichier_out == NULL || fichier_vecteur == NULL){
+        fprintf(stderr,"\nerreur lors de l'ouverture d'un fichier");
+        return -1;
+    }
+
+    int indice_vecteur = 0;
+    char buffer[(BLOC_OCTETS*sizeof(char)) +1];
+    char chiffree[(BLOC_OCTETS*sizeof(char)) +1];
+    char tampon[(BLOC_OCTETS*sizeof(char)) +1];
+    unsigned char iv_key[(BLOC_OCTETS*sizeof(char)) +1];
+
+    /* mettre la clef a la bonne longueur ? */
+
+    while (fread(buffer, sizeof( char ), BLOC_OCTETS, fichier_in) > 0){
         
         /* Chiffrement du premier bloc du message */
         if (indice_vecteur == 0){
-            if(fread(iv_key, 1, BLOC_OCTETS, fichier_vecteur) <= 0){
-                perror("erreur lecture fichier vecteur");
+            if(fread(iv_key, sizeof( char ), BLOC_OCTETS, fichier_vecteur) <= 0){
+                return -1;
             }
-
-            xor(buffer, (unsigned char*) iv_key, BLOC_OCTETS, tampon);
+            
+            xor((unsigned char*) buffer, iv_key, BLOC_OCTETS, tampon);
             xor((unsigned char*)tampon, key, BLOC_OCTETS, chiffree);
 
             indice_vecteur = 1;
         /* Chiffrement du reste du message */
         } else {
-            xor(buffer, (unsigned char*)chiffree, BLOC_OCTETS, tampon);
+            xor((unsigned char*)buffer, (unsigned char*)chiffree, BLOC_OCTETS, tampon);
             xor((unsigned char*)tampon, key, BLOC_OCTETS, chiffree);
         }
-        fwrite(chiffree, 1, BLOC_OCTETS, fichier_out);
+        fwrite(chiffree, sizeof( char ), BLOC_OCTETS, fichier_out);
     }
 
+    /* Fermeture des fichiers ouverts */
+    fclose(fichier_in);
+    fclose(fichier_out);
+    fclose(fichier_vecteur);
 
-    /*int j = 0;
-    for(int i = 0; i < size; i++){
-        if (j == 16){
-            j = 0;
-        }
-        if (i < 16){
-            res[i] = msg[i] ^ iv[i];
-        } else {
-            res[i] = msg[i] ^ res[i-16];
-        }
-            res[i] ^= key[j];
-            j++;
-  }*/
+    return 0;
 }
 
 
-void cbc_decrypt(unsigned char *msg, unsigned char *key, unsigned char *iv, size_t size, unsigned char *res);
-// {
-//   unsigned char temp_block[16];
-//   unsigned char prev_block[16];
-//   for (int i = 0; i < size; i += 16){
-//     memcpy(temp_block, msg + i, 16);
-//     for (int j = 0; j < 16; j++){
-//       res[i + j] = msg[i + j] ^ key[j];
-//     }
-//     if (i == 0){
-//       for(int j = 0; j < 16; j++){
-//         res[j] ^= iv[j];
-//       }
-//     }
-//     else{
-//       for (int j = 0; j < 16; j++) {
-//         res[i + j] ^= prev_block[j];
-//       }
-//     }
-//     memcpy(prev_block, temp_block, 16);
-//   }
-// }
+int cbc_decrypt(char *msg, unsigned char *key, char *iv, char *res){
+    FILE* fichier_in = fopen(msg, "r");
+    FILE* fichier_out = fopen(res, "w");
+    FILE* fichier_vecteur = fopen(iv, "r");
+    
+    if (fichier_in == NULL || fichier_out == NULL || fichier_vecteur == NULL){
+        fprintf(stderr,"\nerreur lors de l'ouverture d'un fichier");
+        return -1;
+    }
+
+    int nbLus, indice_vecteur = 0;
+    char buffer[(BLOC_OCTETS*sizeof(char)) +1];
+    char prev_block[(BLOC_OCTETS*sizeof(char)) +1];
+    char temp_block[(BLOC_OCTETS*sizeof(char)) +1];
+    char cypher_block[(BLOC_OCTETS*sizeof(char)) +1];
+    unsigned char iv_key[(BLOC_OCTETS*sizeof(char)) +1];  
+
+    while (fread(buffer, sizeof( char ), BLOC_OCTETS, fichier_in) > 0){
+        xor((unsigned char*) buffer, key, BLOC_OCTETS, temp_block);
+
+        if (indice_vecteur == 0){
+            if(fread(iv_key, sizeof( char ), BLOC_OCTETS, fichier_vecteur) <= 0){
+                return -1;
+            }
+
+            xor((unsigned char*) temp_block, iv_key, BLOC_OCTETS, cypher_block);
+        }   else {
+            xor((unsigned char*) temp_block, (unsigned char*) prev_block, BLOC_OCTETS, cypher_block);
+        }
+        printf("%s\n", cypher_block);
+        memcpy(prev_block, buffer, 16);
+        fwrite(cypher_block, sizeof( char ), BLOC_OCTETS, fichier_out);
+    }
+
+    return 0;
+}

@@ -1,1 +1,0 @@
-Test de la methode cbc crypt avec des caractères spéciaux :§;,+

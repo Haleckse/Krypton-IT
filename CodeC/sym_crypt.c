@@ -14,19 +14,20 @@
 //
 int main(int argc, char* argv[]){
     
-    printf("--- début programme ---\n");
+    printf("\n--- début programme ---\n");
 
     /* Necessary variables for the program */
     unsigned char* key; 
     char* fich_in; char* fich_out;
     char* methode_crypt; 
-    unsigned char* fich_vecteur;
+    char* fich_vecteur;
+    FILE* fich_key;
     
-    char optstring[] = ":i:o:k:f::m:v::l::h::";
+    char optstring[] = ":i:o:k:f:m:v:l:h:";
     int opt; 
     extern char *optarg;
     extern int optind, optopt;
-    int vflag = 0, hflag = 0;
+    int vflag = 0, hflag = 0, kflag = 0;
 
     /* Datas processing */
     while((opt = getopt(argc, argv, optstring)) != -1)  
@@ -46,8 +47,11 @@ int main(int argc, char* argv[]){
                 key = (unsigned char*)optarg;
                 break;  
             case 'f':
-
-
+                fich_key = fopen(optarg, "r");
+                if(fread(key, sizeof( char ), 512, fich_key) <= 0){
+                    perror("ouverture fichier clef");
+                }
+                break;
             case 'm':  
             /* Select method */
                 methode_crypt = optarg;
@@ -55,7 +59,7 @@ int main(int argc, char* argv[]){
             case 'v':
             /* vector cbc file */
                 vflag = 1;
-                fich_vecteur = (unsigned char*) optarg;
+                fich_vecteur = optarg;
                 break;
             case 'l': 
             /* Log file if needed */ 
@@ -74,14 +78,18 @@ int main(int argc, char* argv[]){
                 break;  
         }  
     }  
+
+    //printf("cle : %s\n", key);
   
     /* extras arguments */
     for(; optind < argc; optind++){      
         printf("extra arguments: %s\n", argv[optind]);  
     } 
 
+    /* Print the commands help in the terminal */
     if (hflag == 1){
         commandes_affichage();
+
     } else {
         /* pick the method asked by the user */
         printf("\n ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
@@ -90,11 +98,15 @@ int main(int argc, char* argv[]){
             /* Check initialisating vector if present */
             if (vflag != 1) {
                 fprintf(stderr,"\nErreur, manque le vecteur d'initialisation methode CBC\n");
-                exit(EXIT_FAILURE);
+                
             } else {
                 /* CBC Methods */
                 if (methode_crypt = "cbc-crypt"){
-                    cbc_crypt(fich_in, key, (char*)fich_vecteur, fich_out);
+                    /* CBC-crypting method */
+                    if(cbc_crypt(fich_in, key, fich_vecteur, fich_out) == -1){
+                        fprintf(stderr,"\nerreur cbc-crypt\n");
+                    }
+
                 } else {
                     // fonction
                 }

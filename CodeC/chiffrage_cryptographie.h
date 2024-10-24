@@ -50,17 +50,7 @@ void commandes_affichage();
  *  @param : nom du fichier msg (:String), cle de chiffrage (:String)
  *  @return 0 si succes, -1 sinon 
  */
-int xor_fichier(char* fich_in, char* fichier_out, unsigned char* key);
-
-
-/**
- *  @brief Fonction permettant le decryptage a partir d'un fichier
- *         Les fichiers seront ouverts dans la fonctions
- *  @param: Nom du fichier (:String) 
- *          cle de dechiffrage (:String), 
- *  @return 0 si succes, -1 sinon 
- */
-int dechiffrage_char_fichier(char* nom_fichier, char* key);
+int xor_fichier(const char* fich_in, const char* fichier_out, unsigned char* key);
 
 
 /**
@@ -78,9 +68,20 @@ int mask(const char* fich_in, const char* fich_out);
  *  @param : Nom du fichier (:String), clef de chiffrement (:int)
  *  @param : fichier vecteur (:String), taille (:size_t)
  *  @param : fichier où l'on va écrire le chiffré 
- *  @return  null
+ *  @return  0 si succes, -1 sinon 
  */
-void cbc_crypt(char *msg, unsigned char* key,char* iv, char* res);
+int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res);
+
+
+/**
+ *  @brief Fonction permettant le dechiffrement de la notion de
+ *         Cypher Bloc Chain (CBC)
+ *  @param : Nom du fichier (:String), clef de chiffrement (:int)
+ *  @param : fichier vecteur (:String), taille (:size_t)
+ *  @param : fichier où l'on va écrire le chiffré 
+ *  @return  0 si succes, -1 sinon 
+ */
+int cbc_decrypt(char *msg, unsigned char* key, char* iv, char* res);
 
 
 /** @} */
