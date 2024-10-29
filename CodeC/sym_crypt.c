@@ -18,6 +18,7 @@ int main(int argc, char* argv[]){
 
     /* Necessary variables for the program */
     unsigned char* key; 
+    char key_fichier[TAILLE_BLOC * sizeof(char)];
     char* fich_in; char* fich_out;
     char* methode_crypt; 
     char* fich_vecteur;
@@ -47,8 +48,9 @@ int main(int argc, char* argv[]){
                 key = (unsigned char*)optarg;
                 break;  
             case 'f':
+                kflag = 1;
                 fich_key = fopen(optarg, "r");
-                if(fread(key, sizeof( char ), 512, fich_key) <= 0){
+                if(fread(key_fichier, 1, 16, fich_key) <= 0){
                     perror("ouverture fichier clef");
                 }
                 break;
@@ -78,8 +80,6 @@ int main(int argc, char* argv[]){
                 break;  
         }  
     }  
-
-    //printf("cle : %s\n", key);
   
     /* extras arguments */
     for(; optind < argc; optind++){      
@@ -108,7 +108,10 @@ int main(int argc, char* argv[]){
                     }
 
                 } else {
-                    // fonction
+                    /* CBC-uncrypting method */
+                    if( cbc_decrypt(fich_in, key, fich_vecteur, fich_out) == -1){
+                        fprintf(stderr,"\nerreur cbc-crypt\n");
+                    }
                 }
             }
         } else {

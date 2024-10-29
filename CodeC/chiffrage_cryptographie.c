@@ -177,15 +177,15 @@ int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
         return -1;
     }
 
-    int indice_vecteur = 0;
-    char buffer[(BLOC_OCTETS*sizeof(char)) +1];
-    char chiffree[(BLOC_OCTETS*sizeof(char)) +1];
-    char tampon[(BLOC_OCTETS*sizeof(char)) +1];
-    unsigned char iv_key[(BLOC_OCTETS*sizeof(char)) +1];
+    int nbLus, indice_vecteur = 0;
+    char buffer[(BLOC_OCTETS*sizeof(char))];
+    char chiffree[(BLOC_OCTETS*sizeof(char))];
+    char tampon[(BLOC_OCTETS*sizeof(char))];
+    unsigned char iv_key[(BLOC_OCTETS*sizeof(char))];
 
     /* mettre la clef a la bonne longueur ? */
 
-    while (fread(buffer, sizeof( char ), BLOC_OCTETS, fichier_in) > 0){
+    while (nbLus = fread(buffer, sizeof( char ), BLOC_OCTETS, fichier_in) > 0){
         
         /* Chiffrement du premier bloc du message */
         if (indice_vecteur == 0){
@@ -193,16 +193,16 @@ int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
                 return -1;
             }
             
-            xor((unsigned char*) buffer, iv_key, BLOC_OCTETS, tampon);
-            xor((unsigned char*)tampon, key, BLOC_OCTETS, chiffree);
+            xor((unsigned char*) buffer, iv_key, nbLus, tampon);
+            xor((unsigned char*)tampon, key, nbLus, chiffree);
 
             indice_vecteur = 1;
         /* Chiffrement du reste du message */
         } else {
-            xor((unsigned char*)buffer, (unsigned char*)chiffree, BLOC_OCTETS, tampon);
-            xor((unsigned char*)tampon, key, BLOC_OCTETS, chiffree);
+            xor((unsigned char*)buffer, (unsigned char*)chiffree, nbLus, tampon);
+            xor((unsigned char*)tampon, key, nbLus, chiffree);
         }
-        fwrite(chiffree, sizeof( char ), BLOC_OCTETS, fichier_out);
+        fwrite(chiffree, sizeof( char ), nbLus, fichier_out);
     }
 
     /* Fermeture des fichiers ouverts */
@@ -225,28 +225,34 @@ int cbc_decrypt(char *msg, unsigned char *key, char *iv, char *res){
     }
 
     int nbLus, indice_vecteur = 0;
-    char buffer[(BLOC_OCTETS*sizeof(char)) +1];
-    char prev_block[(BLOC_OCTETS*sizeof(char)) +1];
-    char temp_block[(BLOC_OCTETS*sizeof(char)) +1];
-    char cypher_block[(BLOC_OCTETS*sizeof(char)) +1];
-    unsigned char iv_key[(BLOC_OCTETS*sizeof(char)) +1];  
+    char buffer[(BLOC_OCTETS*sizeof(char))];
+    char prev_block[(BLOC_OCTETS*sizeof(char))];
+    char temp_block[(BLOC_OCTETS*sizeof(char))];
+    char cypher_block[(BLOC_OCTETS*sizeof(char))];
+    unsigned char iv_key[(BLOC_OCTETS*sizeof(char))];  
 
-    while (fread(buffer, sizeof( char ), BLOC_OCTETS, fichier_in) > 0){
-        xor((unsigned char*) buffer, key, BLOC_OCTETS, temp_block);
+    while (nbLus = fread(buffer, sizeof( char ), BLOC_OCTETS, fichier_in) > 0){
+        printf("%d\n", nbLus);
+        xor((unsigned char*) buffer, key, nbLus, temp_block);
 
         if (indice_vecteur == 0){
             if(fread(iv_key, sizeof( char ), BLOC_OCTETS, fichier_vecteur) <= 0){
                 return -1;
             }
 
-            xor((unsigned char*) temp_block, iv_key, BLOC_OCTETS, cypher_block);
-        }   else {
-            xor((unsigned char*) temp_block, (unsigned char*) prev_block, BLOC_OCTETS, cypher_block);
+            xor((unsigned char*) temp_block, iv_key, nbLus, cypher_block);
+            indice_vecteur = 1;
+        } else {
+            xor((unsigned char*) temp_block, (unsigned char*) prev_block, nbLus, cypher_block);
         }
-        printf("%s\n", cypher_block);
-        memcpy(prev_block, buffer, 16);
-        fwrite(cypher_block, sizeof( char ), BLOC_OCTETS, fichier_out);
+        memcpy(prev_block, buffer, nbLus);
+        fwrite(cypher_block, sizeof( char ), nbLus, fichier_out);
     }
+
+    /* Fermeture des fichiers ouverts */
+    fclose(fichier_in);
+    fclose(fichier_out);
+    fclose(fichier_vecteur);
 
     return 0;
 }
