@@ -21,15 +21,20 @@ else
     LDFLAGS +=
 endif
 
-# Nom de l'exécutable
-EXEC = $(BIN_DIR)/sym_crypt
+# Noms des exécutables
+EXEC1 = $(BIN_DIR)/sym_crypt
+EXEC2 = $(BIN_DIR)/dh_gen_group
 
-# Fichiers sources et objets (les objets sont placés dans obj/)
-SRC = $(wildcard $(SRC_DIR)/*.c)
-OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
+# Fichiers sources spécifiques pour chaque exécutable
+SRC1 = $(SRC_DIR)/sym_crypt.c $(SRC_DIR)/chiffrage_cryptographie.c
+SRC2 = $(SRC_DIR)/dh_gen_group.c $(SRC_DIR)/dh_prime.c
+
+# Fichiers objets associés à chaque exécutable
+OBJ1 = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC1))
+OBJ2 = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC2))
 
 # Cible par défaut : tout compiler
-all: $(OBJ_DIR) $(BIN_DIR) $(EXEC)
+all: $(OBJ_DIR) $(BIN_DIR) $(EXEC1) $(EXEC2)
 
 # Création du répertoire obj si nécessaire
 $(OBJ_DIR):
@@ -38,8 +43,11 @@ $(OBJ_DIR):
 $(BIN_DIR):
 	@mkdir -p $(BIN_DIR)
 
-# Compilation de l'exécutable
-$(EXEC): $(OBJ)
+# Compilation des exécutables
+$(EXEC1): $(OBJ1)
+	$(ECHO)$(CC) -o $@ $^ $(LDFLAGS)
+
+$(EXEC2): $(OBJ2)
 	$(ECHO)$(CC) -o $@ $^ $(LDFLAGS)
 
 # Compilation des fichiers objets dans obj/
@@ -53,12 +61,10 @@ clean:
 	rm -rf $(OBJ_DIR)/*.o
 	rm -f $(BIN_DIR)/*
 	
-# Nettoyage complet : supprime aussi l'exécutable et la documentation
+# Nettoyage complet : supprime aussi les exécutables et la documentation
 mrproper: clean
 	$(ECHO)rm -rf $(BIN_DIR)/* $(DOC_DIR)/html $(OBJ_DIR)
 
-
-
 # Dépendances spécifiques
 $(OBJ_DIR)/chiffrage_cryptographie.o: $(SRC_DIR)/chiffrage_cryptographie.h
-$(OBJ_DIR)/sym_crypt.o: $(SRC_DIR)/chiffrage_cryptographie.h
+$(OBJ_DIR)/dh_gen_group.o: $(SRC_DIR)/dh_prime.h
