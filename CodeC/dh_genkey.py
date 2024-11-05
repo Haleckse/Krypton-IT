@@ -15,6 +15,7 @@ def puissance_mod_n(a: int, e: int, n: int) -> int:
 # Fonction d’Alice
 def alice(p, g, queue_bob, queue_alice):
     a = 5  # Privé à Alice
+    print("Bob choisit le nombre", a, " (connu uniquement par Alice)")
     A = puissance_mod_n(g, a, p)
     print("Alice envoie A =", A, "à Bob (connu de l'espion Eve)")
     queue_bob.put(A)  # Alice envoie A
@@ -28,6 +29,7 @@ def alice(p, g, queue_bob, queue_alice):
 # Fonction de Bob
 def bob(p, g, queue_bob, queue_alice):
     b = 3  # Privé à Bob
+    print("Bob choisit le nombre", b, " (connu uniquement par Bob)")
     B = puissance_mod_n(g, b, p)
     print("Bob envoie B =", B, "à Alice (connu de l'espion Eve)")
     queue_alice.put(B)  # Bob envoie B
@@ -40,7 +42,7 @@ def bob(p, g, queue_bob, queue_alice):
 
 def main():
     # Lecture des paramètres depuis le fichier généré
-    with open("resultat.txt", "r") as file:
+    with open("../param.txt", "r") as file:
         params = file.readlines()
     p = int(params[0].split("=")[1].strip())
     g = int(params[1].split("=")[1].strip())
