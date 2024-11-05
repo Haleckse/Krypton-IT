@@ -164,88 +164,109 @@ int mask(const char* fich_in, const char* fich_out){
 // Fonction réalisant le chiffrement de la méthode CBC 
 // Fichiers ouverts dans la fonction
 //
-#define BLOC_OCTETS 16
+#define BLOCK_SIZE 16
 int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
 {
     /* Ouverture des différents fichiers utilisés */
-    FILE* fichier_in = fopen(msg, "r");
-    FILE* fichier_out = fopen(res, "w");
-    FILE* fichier_vecteur = fopen(iv, "r");
+    FILE* fichier_in = fopen(msg, "rb");
+    FILE* fichier_out = fopen(res, "wb");
+    FILE* fichier_vecteur = fopen(iv, "rb");
 
     if (fichier_in == NULL || fichier_out == NULL || fichier_vecteur == NULL){
         fprintf(stderr,"\nerreur lors de l'ouverture d'un fichier");
         return -1;
     }
 
-    int nbLus, indice_vecteur = 0;
-    char buffer[(BLOC_OCTETS*sizeof(char))];
-    char chiffree[(BLOC_OCTETS*sizeof(char))];
-    char tampon[(BLOC_OCTETS*sizeof(char))];
-    unsigned char iv_key[(BLOC_OCTETS*sizeof(char))];
+    size_t nbLus;
+    unsigned char *buffer = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *tampon = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *prev_block = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *chiffree = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *iv_key = (unsigned char *)malloc(BLOCK_SIZE);
 
     /* mettre la clef a la bonne longueur ? */
 
-    while (nbLus = fread(buffer, sizeof( char ), BLOC_OCTETS, fichier_in) > 0){
-        
-        /* Chiffrement du premier bloc du message */
-        if (indice_vecteur == 0){
-            if(fread(iv_key, sizeof( char ), BLOC_OCTETS, fichier_vecteur) <= 0){
-                return -1;
-            }
-            
-            xor((unsigned char*) buffer, iv_key, nbLus, tampon);
-            xor((unsigned char*)tampon, key, nbLus, chiffree);
+    if (fread(iv_key, 1, BLOCK_SIZE, fichier_vecteur) < BLOCK_SIZE){
+        perror("Error reading the IV from the file");
+        return -1;
+    }
+    memcpy(prev_block, iv, BLOCK_SIZE);
 
-            indice_vecteur = 1;
-        /* Chiffrement du reste du message */
-        } else {
-            xor((unsigned char*)buffer, (unsigned char*)chiffree, nbLus, tampon);
-            xor((unsigned char*)tampon, key, nbLus, chiffree);
+    while (nbLus = fread(buffer, sizeof( char ), BLOCK_SIZE, fichier_in) > 0){
+        
+        // Add whitespace padding if the block is not full
+        if (nbLus < BLOCK_SIZE){
+            memset(buffer + nbLus, ' ', BLOCK_SIZE - nbLus);
         }
-        fwrite(chiffree, sizeof( char ), nbLus, fichier_out);
+        memcpy(tampon, buffer, BLOCK_SIZE);
+        
+        xor(buffer, prev_block, BLOCK_SIZE, (char*) tampon);
+
+        xor(tampon, key, BLOCK_SIZE, (char*) chiffree);
+        
+        fwrite(chiffree, sizeof( char ), BLOCK_SIZE, fichier_out);
+        
+        // modifie le block B-1 
+        memcpy(prev_block, chiffree, BLOCK_SIZE);
     }
 
     /* Fermeture des fichiers ouverts */
     fclose(fichier_in);
     fclose(fichier_out);
     fclose(fichier_vecteur);
+    free(buffer);
+    free(prev_block);
+    free(tampon);
+    free(chiffree);
+    free(iv_key);
 
     return 0;
 }
 
 
 int cbc_decrypt(char *msg, unsigned char *key, char *iv, char *res){
-    FILE* fichier_in = fopen(msg, "r");
-    FILE* fichier_out = fopen(res, "w");
-    FILE* fichier_vecteur = fopen(iv, "r");
+    FILE* fichier_in = fopen(msg, "rb");
+    FILE* fichier_out = fopen(res, "wb");
+    FILE* fichier_vecteur = fopen(iv, "rb");
     
     if (fichier_in == NULL || fichier_out == NULL || fichier_vecteur == NULL){
         fprintf(stderr,"\nerreur lors de l'ouverture d'un fichier");
         return -1;
     }
 
-    int nbLus, indice_vecteur = 0;
-    char buffer[(BLOC_OCTETS*sizeof(char))];
-    char prev_block[(BLOC_OCTETS*sizeof(char))];
-    char temp_block[(BLOC_OCTETS*sizeof(char))];
-    char cypher_block[(BLOC_OCTETS*sizeof(char))];
-    unsigned char iv_key[(BLOC_OCTETS*sizeof(char))];  
+    size_t nbLus;
+    unsigned char *buffer = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *prev_block = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *temp_block = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *cypher_block = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *iv_key = (unsigned char *)malloc(BLOCK_SIZE);
 
-    while (nbLus = fread(buffer, sizeof( char ), BLOC_OCTETS, fichier_in) > 0){
-        printf("%d\n", nbLus);
-        xor((unsigned char*) buffer, key, nbLus, temp_block);
+    // Lit le fichier vecteur et traite en cas d'erreur
+    if (fread(iv_key, 1, BLOCK_SIZE, fichier_vecteur) < BLOCK_SIZE){
+        perror("Error reading the IV from the file");
+        return -1;
+    }
 
-        if (indice_vecteur == 0){
-            if(fread(iv_key, sizeof( char ), BLOC_OCTETS, fichier_vecteur) <= 0){
-                return -1;
-            }
+    memcpy(prev_block, iv_key, BLOCK_SIZE);
 
-            xor((unsigned char*) temp_block, iv_key, nbLus, cypher_block);
-            indice_vecteur = 1;
-        } else {
-            xor((unsigned char*) temp_block, (unsigned char*) prev_block, nbLus, cypher_block);
+    // Traitement du fichier pour le décrypté
+    while (nbLus = fread(buffer, sizeof( char ), BLOCK_SIZE, fichier_in) > 0){
+        
+        // Check si le block est plein
+        if (nbLus < BLOCK_SIZE){
+            perror("Error block is not full");
         }
-        memcpy(prev_block, buffer, nbLus);
+        memcpy(temp_block, buffer, BLOCK_SIZE);
+
+        // Decrypte le block
+        xor(buffer, key, BLOCK_SIZE, (char*)temp_block);
+
+        // XOR du block avec le précédent
+        xor(temp_block, prev_block, BLOCK_SIZE, (char*)cypher_block);
+
+        // Copie le block déchiffré dans le fichier OUT
+        memcpy(prev_block, buffer, BLOCK_SIZE);
+
         fwrite(cypher_block, sizeof( char ), nbLus, fichier_out);
     }
 
@@ -253,6 +274,11 @@ int cbc_decrypt(char *msg, unsigned char *key, char *iv, char *res){
     fclose(fichier_in);
     fclose(fichier_out);
     fclose(fichier_vecteur);
+    free(buffer);
+    free(prev_block);
+    free(temp_block);
+    free(cypher_block);
+    free(iv_key);
 
     return 0;
 }

@@ -17,12 +17,11 @@ int main(int argc, char* argv[]){
     printf("\n--- début programme ---\n");
 
     /* Necessary variables for the program */
-    unsigned char* key; 
-    char key_fichier[TAILLE_BLOC * sizeof(char)];
+    unsigned char* key;
+    char* nom;
     char* fich_in; char* fich_out;
     char* methode_crypt; 
     char* fich_vecteur;
-    FILE* fich_key;
     
     char optstring[] = ":i:o:k:f:m:v:l:h:";
     int opt; 
@@ -49,10 +48,7 @@ int main(int argc, char* argv[]){
                 break;  
             case 'f':
                 kflag = 1;
-                fich_key = fopen(optarg, "r");
-                if(fread(key_fichier, 1, 16, fich_key) <= 0){
-                    perror("ouverture fichier clef");
-                }
+                nom = optarg;
                 break;
             case 'm':  
             /* Select method */
@@ -81,6 +77,33 @@ int main(int argc, char* argv[]){
         }  
     }  
   
+    if (kflag == 1){
+        /* Opening of the key-file */
+        FILE* fich_key = fopen(nom, "rb");
+
+        /* Check if the file opened correctly */
+        if (fich_key == NULL){
+            perror("erreur ouverture fichier clef ");
+        }
+
+        /* Search for the size of the key */
+        fseek(fich_key, 0L, SEEK_END);
+        int size = ftell(fich_key);
+        rewind(fich_key);
+
+        /* keys variables */ 
+        unsigned char* key_fichier = (unsigned char*) malloc(size);
+        key = (unsigned char*) malloc(size);
+
+        /* read the file containing the key */
+        if(fread(key_fichier,  sizeof( char ), size, fich_key) < size){
+            perror("ouverture fichier clef");
+        }
+
+        memcpy(key, key_fichier, size);
+    }
+
+    
     /* extras arguments */
     for(; optind < argc; optind++){      
         printf("extra arguments: %s\n", argv[optind]);  
@@ -94,7 +117,7 @@ int main(int argc, char* argv[]){
         /* pick the method asked by the user */
         printf("\n ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
 
-        if ( (methode_crypt = "cbc-crypt")|| (methode_crypt = "cbc-decrypt") ){
+        if ( (methode_crypt == "cbc-crypt") || (methode_crypt == "cbc-decrypt") ){
             /* Check initialisating vector if present */
             if (vflag != 1) {
                 fprintf(stderr,"\nErreur, manque le vecteur d'initialisation methode CBC\n");
