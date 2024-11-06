@@ -160,11 +160,13 @@ int mask(const char* fich_in, const char* fich_out){
     return 0;
 }
 
+// Max size des blocks CBC
+//
+#define BLOCK_SIZE 16
 
 // Fonction réalisant le chiffrement de la méthode CBC 
 // Fichiers ouverts dans la fonction
 //
-#define BLOCK_SIZE 16
 int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
 {
     /* Ouverture des différents fichiers utilisés */
@@ -224,6 +226,9 @@ int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
 }
 
 
+// Fonction permettant cette fois-ci le déchiffrement de la méthode CBC
+// Fichiers ouverts dans la fonction
+//
 int cbc_decrypt(char *msg, unsigned char *key, char *iv, char *res){
     FILE* fichier_in = fopen(msg, "rb");
     FILE* fichier_out = fopen(res, "wb");

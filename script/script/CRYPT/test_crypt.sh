@@ -4,7 +4,7 @@ ko='\e[00;31m';
 wipe='\e[00m';
 ok='\e[01;32m';
 
-BASE=../..
+BASE=../../../bin
 TEST=./tests
 RET=0
 

@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
     char* methode_crypt; 
     char* fich_vecteur;
     
-    char optstring[] = ":i:o:k:f:m:v:l:h:";
+    char optstring[] = ":i:o:k:f:m:v:l:h";
     int opt; 
     extern char *optarg;
     extern int optind, optopt;
