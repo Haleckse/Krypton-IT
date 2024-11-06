@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 #include "dh_prime.h"
 
 // Affiche l'aide pour l'utilisation de dh_gen_group
@@ -54,5 +55,11 @@ int main(int argc, char *argv[]) {
     fclose(fichier);
 
     printf("Nombre premier de Sophie Germain (p) et générateur (g) générés et enregistrés dans %s.\n", nom_fichier);
+
+    // execution direct du programme python dh_genkey.py
+    if (system("python3 CodeC/dh_genkey.py") == -1){
+        perror("erreur redirection programme python dh_gen_group.c");
+    }
+
     return 0;
 }
