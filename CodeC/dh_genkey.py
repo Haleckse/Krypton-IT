@@ -42,7 +42,7 @@ def bob(p, g, queue_bob, queue_alice):
 
 def main():
     # Lecture des paramètres depuis le fichier généré
-    with open("param.txt", "r") as file:
+    with open("Output/param.txt", "r") as file:
         params = file.readlines()
     p = int(params[0].split("=")[1].strip())
     g = int(params[1].split("=")[1].strip())

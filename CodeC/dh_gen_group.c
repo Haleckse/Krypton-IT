@@ -45,7 +45,13 @@ int main(int argc, char *argv[]) {
     assert(g != -1); // Vérifie que le générateur a bien été trouvé
 
     // Écriture des résultats dans le fichier spécifié
-    FILE *fichier = fopen(nom_fichier, "w");
+
+    char path[256]; // Ensure it has enough space for the result
+    snprintf(path, sizeof(path), "Output/%s", nom_fichier);
+
+    printf("%s\n", path); 
+
+    FILE *fichier = fopen(path, "w");
     if (!fichier) {
         perror("Erreur d'ouverture du fichier de sortie");
         return 1;
