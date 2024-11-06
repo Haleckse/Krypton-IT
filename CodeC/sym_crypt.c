@@ -117,14 +117,14 @@ int main(int argc, char* argv[]){
         /* pick the method asked by the user */
         printf("\n ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
 
-        if ( (methode_crypt == "cbc-crypt") || (methode_crypt == "cbc-decrypt") ){
+        if ( (strcmp(methode_crypt, "cbc-crypt") == 0) || (strcmp(methode_crypt, "cbc-decrypt") == 0) ){
             /* Check initialisating vector if present */
             if (vflag != 1) {
                 fprintf(stderr,"\nErreur, manque le vecteur d'initialisation methode CBC\n");
                 
             } else {
                 /* CBC Methods */
-                if (methode_crypt = "cbc-crypt"){
+                if ( strcmp(methode_crypt,"cbc-crypt") == 0 ){
                     /* CBC-crypting method */
                     if(cbc_crypt(fich_in, key, fich_vecteur, fich_out) == -1){
                         fprintf(stderr,"\nerreur cbc-crypt\n");
@@ -139,7 +139,7 @@ int main(int argc, char* argv[]){
             }
         } else {
             /* XOR or MASK Methods */
-            if (methode_crypt = "xor"){
+            if (strcmp(methode_crypt, "xor") == 0){
                 xor_fichier(fich_in, fich_out, key);
             } else {
                 mask(fich_in, fich_out);

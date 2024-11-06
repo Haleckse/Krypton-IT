@@ -4,6 +4,7 @@ OBJ_DIR = obj
 DOC_DIR = Documents
 DAT_DIR = Datas/Source
 BIN_DIR = bin
+OUT_DIR = Output
 CC = gcc
 CFLAGS = -std=c99 -pedantic 
 LDFLAGS = -lm
@@ -60,6 +61,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 clean:
 	rm -rf $(OBJ_DIR)/*.o
 	rm -f $(BIN_DIR)/*
+	rm -f $(OUT_DIR)/*
 	
 # Nettoyage complet : supprime aussi les exécutables et la documentation
 mrproper: clean

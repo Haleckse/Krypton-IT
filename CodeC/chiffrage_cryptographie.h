@@ -14,7 +14,7 @@
  *  @param : taille du message (:int), variable qui contiendra le chiffrage (:String)
  *  @return null
  */
-void xor(unsigned char* msg, unsigned char* key, int msg_length, char* crypted);
+void xor(unsigned char* msg, unsigned char* key, int msg_length, int key_length, unsigned char* crypted);
 
 
 /**

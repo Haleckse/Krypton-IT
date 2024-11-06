@@ -20,12 +20,9 @@
 // Fonction permettant de chiffrer un message caractères a caractères
 // Retour de la fonction : message codé dans la variable crypted (code ASCII)
 //
-void xor(unsigned char* msg, unsigned char* key, int msg_length, char* crypted){
-    
-    int len_key = strlen((const char *)key);
-
+void xor(unsigned char* msg, unsigned char* key, int msg_length, int key_length, unsigned char* crypted){
     for (int i=0; i<msg_length; i++){
-        crypted[i] = (msg[i] ^ key[i%len_key]);
+        crypted[i] = (msg[i] ^ key[i%key_length]);
     }
 }
 
@@ -81,7 +78,10 @@ void commandes_affichage(){
 int xor_fichier(const char* fich_in, const char* fichier_out, unsigned char* key){
     int nbEcrit=0, nbLus=0;
     unsigned char bloc[TAILLE_BLOC];
-    char bloc_crypt[TAILLE_BLOC];
+    unsigned char bloc_crypt[TAILLE_BLOC];
+
+    char path_output[256]; // Ensure it has enough space for the result
+    snprintf(path_output, sizeof(path_output), "Output/%s", fichier_out);
 
     // Ouverture du fichier contenant le message à chiffrer
     int fichier_msg = open(fich_in, O_RDONLY);
@@ -90,14 +90,14 @@ int xor_fichier(const char* fich_in, const char* fichier_out, unsigned char* key
     }
 
     // Ouverture ou création du fichier qui recevra le message chiffré
-    int fichier_crypt = open(fichier_out, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU|S_IROTH);
+    int fichier_crypt = open(path_output, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU|S_IROTH);
     if(fichier_crypt == -1){
         perror("Erreur ouverture fichier crypte");
         close(fichier_msg);
     }
 
     while((nbLus == nbEcrit) && (nbLus = read(fichier_msg, bloc, TAILLE_BLOC))>0){
-        xor(bloc, key, nbLus, bloc_crypt);
+        xor(bloc, key, nbLus, strlen((char *)key), bloc_crypt);
         nbEcrit = write(fichier_crypt, bloc_crypt, nbLus);
     }
 
@@ -116,33 +116,40 @@ int xor_fichier(const char* fich_in, const char* fichier_out, unsigned char* key
 // Les fichiers seront ouverts dans la fonction
 //
 int mask(const char* fich_in, const char* fich_out){
+    char out[256]; // Ensure it has enough space for the result
+    snprintf(out, sizeof(out), "Output/%s", fich_out);
+
     /* Ouverture fichiers */
     FILE* msg = fopen(fich_in, "r");
-    FILE* crypt = fopen(fich_out, "w");
+    FILE* crypt = fopen(out, "w");
     FILE* log_key = fopen("log_key.txt", "a");
     
     /* Initialisation des variables */
-    int len_msg = strlen(fich_in);
-    char msg_crypt[len_msg];
-    char buffer[len_msg];
-    unsigned char key[len_msg];
+    /* Search for the size of the key */
+    fseek(msg, 0L, SEEK_END);
+    int size = ftell(msg);
+    rewind(msg);
+
+    char msg_crypt[size];
+    char buffer[size];
+    unsigned char key[size];
 
     if (msg != NULL){
         /* Initialisation */
-        gen_key(len_msg, key);
+        gen_key(size, key);
         int len_key = strlen((char*) key);
 
         /* Lecture du message crypté*/
-        if (fread(buffer, 1, len_msg, msg) < len_msg){
+        if (fread(buffer, 1, size, msg) < size){
             perror("fread");
         }
 
-        for(int i = 0; i < len_msg; i++){
+        for(int i = 0; i < size; i++){
             msg_crypt[i] = (buffer[i] ^ key[i]);
         }
 
         /* Ecriture message crypté */
-        fwrite(msg_crypt, 1, len_msg, crypt);
+        fwrite(msg_crypt, 1, size, crypt);
 
         /* Strockage de la cle dans le log */
         fwrite("\n", 1, 1, log_key);
@@ -167,48 +174,55 @@ int mask(const char* fich_in, const char* fich_out){
 // Fonction réalisant le chiffrement de la méthode CBC 
 // Fichiers ouverts dans la fonction
 //
-int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
-{
+int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res){
+    /* Redirection du fichier sortant */
+    char out[256];
+    snprintf(out, sizeof(out), "Output/%s", res);
+
     /* Ouverture des différents fichiers utilisés */
     FILE* fichier_in = fopen(msg, "rb");
-    FILE* fichier_out = fopen(res, "wb");
+    FILE* fichier_out = fopen(out, "wb");
     FILE* fichier_vecteur = fopen(iv, "rb");
 
-    if (fichier_in == NULL || fichier_out == NULL || fichier_vecteur == NULL){
+    /* Check s'ils sont bien ouvert sinon traitement */
+    if (!fichier_in || !fichier_out || !fichier_vecteur){
         fprintf(stderr,"\nerreur lors de l'ouverture d'un fichier");
         return -1;
     }
 
+    /* Variables nécéssaires */
     size_t nbLus;
-    unsigned char *buffer = (unsigned char *)malloc(BLOCK_SIZE);
-    unsigned char *tampon = (unsigned char *)malloc(BLOCK_SIZE);
-    unsigned char *prev_block = (unsigned char *)malloc(BLOCK_SIZE);
-    unsigned char *chiffree = (unsigned char *)malloc(BLOCK_SIZE);
-    unsigned char *iv_key = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *buffer = (unsigned char*) malloc(BLOCK_SIZE);
+    unsigned char *tampon = (unsigned char*) malloc(BLOCK_SIZE);
+    unsigned char *prev_block = (unsigned char*) malloc(BLOCK_SIZE);
+    unsigned char *chiffree = (unsigned char*) malloc(BLOCK_SIZE);
+    unsigned char *iv_key = (unsigned char*) malloc(BLOCK_SIZE);
 
     /* mettre la clef a la bonne longueur ? */
-
-    if (fread(iv_key, 1, BLOCK_SIZE, fichier_vecteur) < BLOCK_SIZE){
+    if (fread(iv_key, sizeof(char), BLOCK_SIZE, fichier_vecteur) < BLOCK_SIZE){
         perror("Error reading the IV from the file");
         return -1;
     }
-    memcpy(prev_block, iv, BLOCK_SIZE);
+    memcpy(prev_block, iv_key, BLOCK_SIZE);
 
-    while (nbLus = fread(buffer, sizeof( char ), BLOCK_SIZE, fichier_in) > 0){
+    // Traitement du fichier pour le crypté
+    while ( (nbLus = fread(buffer, 1, BLOCK_SIZE, fichier_in)) > 0){
         
-        // Add whitespace padding if the block is not full
+        // Ajoute des espaces si le bloc n'est pas complet
         if (nbLus < BLOCK_SIZE){
             memset(buffer + nbLus, ' ', BLOCK_SIZE - nbLus);
         }
-        memcpy(tampon, buffer, BLOCK_SIZE);
-        
-        xor(buffer, prev_block, BLOCK_SIZE, (char*) tampon);
 
-        xor(tampon, key, BLOCK_SIZE, (char*) chiffree);
+        // XOR le bloc avec le précédent        
+        xor(buffer, prev_block, BLOCK_SIZE, BLOCK_SIZE, tampon);
+
+        // Chiffre le bloc
+        xor(tampon, key, BLOCK_SIZE, strlen((char*)key), chiffree);
+
+        // Ajout du bloc crypté dans le fichier sortant
+        fwrite(chiffree, 1, BLOCK_SIZE, fichier_out);
         
-        fwrite(chiffree, sizeof( char ), BLOCK_SIZE, fichier_out);
-        
-        // modifie le block B-1 
+        // modifie le bloc précédent pour la prochaine itération
         memcpy(prev_block, chiffree, BLOCK_SIZE);
     }
 
@@ -230,23 +244,30 @@ int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res)
 // Fichiers ouverts dans la fonction
 //
 int cbc_decrypt(char *msg, unsigned char *key, char *iv, char *res){
+    /* Redirection du fichier sortant */
+    char out[256];
+    snprintf(out, sizeof(out), "Output/%s", res);
+
+    /* Ouverture des fichiers nécessaire */
     FILE* fichier_in = fopen(msg, "rb");
-    FILE* fichier_out = fopen(res, "wb");
+    FILE* fichier_out = fopen(out, "wb");
     FILE* fichier_vecteur = fopen(iv, "rb");
     
-    if (fichier_in == NULL || fichier_out == NULL || fichier_vecteur == NULL){
+    /* Check s'ils sont bien ouvert sinon traitement */
+    if (!fichier_in || !fichier_out || !fichier_vecteur){
         fprintf(stderr,"\nerreur lors de l'ouverture d'un fichier");
         return -1;
     }
 
+    /* Variables nécéssaires */
     size_t nbLus;
-    unsigned char *buffer = (unsigned char *)malloc(BLOCK_SIZE);
-    unsigned char *prev_block = (unsigned char *)malloc(BLOCK_SIZE);
-    unsigned char *temp_block = (unsigned char *)malloc(BLOCK_SIZE);
-    unsigned char *cypher_block = (unsigned char *)malloc(BLOCK_SIZE);
-    unsigned char *iv_key = (unsigned char *)malloc(BLOCK_SIZE);
+    unsigned char *buffer = (unsigned char*) malloc(BLOCK_SIZE);
+    unsigned char *prev_block = (unsigned char*) malloc(BLOCK_SIZE);
+    unsigned char *temp_block = (unsigned char*) malloc(BLOCK_SIZE);
+    unsigned char *cypher_block = (unsigned char*) malloc(BLOCK_SIZE);
+    unsigned char *iv_key = (unsigned char*) malloc(BLOCK_SIZE);
 
-    // Lit le fichier vecteur et traite en cas d'erreur
+    /* Lit le fichier vecteur et traite en cas d'erreur */
     if (fread(iv_key, 1, BLOCK_SIZE, fichier_vecteur) < BLOCK_SIZE){
         perror("Error reading the IV from the file");
         return -1;
@@ -254,31 +275,34 @@ int cbc_decrypt(char *msg, unsigned char *key, char *iv, char *res){
 
     memcpy(prev_block, iv_key, BLOCK_SIZE);
 
-    // Traitement du fichier pour le décrypté
-    while (nbLus = fread(buffer, sizeof( char ), BLOCK_SIZE, fichier_in) > 0){
-        
+    /* Traitement du fichier pour le décrypté */
+    while ((nbLus = fread(buffer, 1, BLOCK_SIZE, fichier_in)) > 0){
+
         // Check si le block est plein
         if (nbLus < BLOCK_SIZE){
-            perror("Error block is not full");
+            fprintf(stderr,"Error block is not full ");
         }
         memcpy(temp_block, buffer, BLOCK_SIZE);
 
         // Decrypte le block
-        xor(buffer, key, BLOCK_SIZE, (char*)temp_block);
+        xor(buffer, key, BLOCK_SIZE, strlen((char*)key), temp_block);
 
         // XOR du block avec le précédent
-        xor(temp_block, prev_block, BLOCK_SIZE, (char*)cypher_block);
+        xor(temp_block, prev_block, BLOCK_SIZE, BLOCK_SIZE, cypher_block);
 
         // Copie le block déchiffré dans le fichier OUT
         memcpy(prev_block, buffer, BLOCK_SIZE);
 
-        fwrite(cypher_block, sizeof( char ), nbLus, fichier_out);
+        // Ecrit le bloc déchiffré dans le fichier sortant
+        fwrite(cypher_block, 1, BLOCK_SIZE, fichier_out);
     }
 
     /* Fermeture des fichiers ouverts */
     fclose(fichier_in);
     fclose(fichier_out);
     fclose(fichier_vecteur);
+
+    /* Liberation de la mémoire utilisée */
     free(buffer);
     free(prev_block);
     free(temp_block);
