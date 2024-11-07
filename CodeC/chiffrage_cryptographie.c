@@ -205,7 +205,7 @@ int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res){
     }
     memcpy(prev_block, iv_key, BLOCK_SIZE);
 
-    // Traitement du fichier pour le crypté
+    /* Traitement du fichier pour le crypté */
     while ( (nbLus = fread(buffer, 1, BLOCK_SIZE, fichier_in)) > 0){
         
         // Ajoute des espaces si le bloc n'est pas complet
@@ -230,6 +230,8 @@ int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res){
     fclose(fichier_in);
     fclose(fichier_out);
     fclose(fichier_vecteur);
+
+    /* Libération de la mémoire utilisée */
     free(buffer);
     free(prev_block);
     free(tampon);
