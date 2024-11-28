@@ -102,7 +102,6 @@ int main(int argc, char* argv[]){
 
         memcpy(key, key_fichier, size);
     }
-
     
     /* extras arguments */
     for(; optind < argc; optind++){      

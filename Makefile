@@ -61,7 +61,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 clean:
 	rm -rf $(OBJ_DIR)/*.o
 	rm -f $(BIN_DIR)/*
-	rm -f $(OUT_DIR)/*
+	rm -rf $(OUT_DIR)/*
 	
 # Nettoyage complet : supprime aussi les exécutables et la documentation
 mrproper: clean

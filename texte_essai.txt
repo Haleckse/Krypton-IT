@@ -1,0 +1,44 @@
+Préface
+
+Un polycopié n'est pas l'équivalent d'un livre. Un livre est autonome. Il doit
+contenir l'ensemble des informations, remarques et exemples qui permettent de
+suivre le développement des idées de l'auteur. Un polycopié est un support
+associé à un cours vivant. Il ne sert qu'à donner des compléments à une
+présentation orale et à fournir un support pour la mémorisation.
+C'est la seule ambition de ce polycopié.
+
+Mais dire cela, c'est aussi espérer que le polycopié s'améliorera avec l'expérience,
+qu'il sera complété par des exercices, des travaux pratiques, des remarques...
+La présentation orale, les exercices en Travaux Dirigés présentent l'architecture du
+cours. Le polycopié donne des compléments. Il y a ainsi des éléments complexes
+qui sont éclaircis par le cours et des exemples simples qui sont réservés aux
+Travaux Pratiques.
+
+Nous en sommes à la première version de ce document, qui est écrite avant même
+que le cours ait lieu, avant que l'interaction avec les étudiants ne vienne permettre
+de le faire progresser.
+
+La notion de version est importante en informatique. Nous avons affaire à des
+logiciels (et maintenant à des documents électroniques) évolutifs. Le nom d'un
+logiciel, ou bien le titre d'un document placé sur l'internet, ne suffisent pas
+toujours à le définir. Il convient d'ajouter le "numéro de version".
+
+En général, une version "de premier développement", c'est à dire qui n'est pas
+encore fiable, possède un numéro commençant par 0. Les premières versions qui
+circulent d'un logiciel ou d'un document sont souvent les versions "0.9". C'est par
+exemple le cas de ce polycopié (la version 0.91 contient simplement des corrections
+orthographiques).
+
+Avec les remarques et le repérage des erreurs par les premiers utilisateurs d'un
+logiciel (ou les premiers lecteurs d'un document électronique), apparaît la version
+1.0 Le logiciel est plus largement diffusé et prend son essor. L'auteur trouve des
+améliorations, des astuces de programmation ou ajoute des fonctions nouvelles.
+Chaque "mise à jour" du logiciel voit progresser son numéro de version.
+
+On considère que les versions dont seul le chiffre décimal progresse sont des
+versions qui améliorent un logiciel sans apporter des changements profonds dans
+l'apparence ou dans les fonctionnalités. Régulièrement des pas importants sont
+franchis, et les logiciels passent "à la version supérieure", en modifiant le chiffre
+des unités. Ainsi, dans ce cours nous parlerons des version 4 des navigateurs
+internet (Internet Explorer 4 ou NetScape 4)... mais en réalité la dernière version, au
+jour où cette préface est écrite, est 4.6 pour NetScape et 4.5 pour Internet Explorer.
