@@ -15,7 +15,7 @@ def puissance_mod_n(a: int, e: int, n: int) -> int:
 # Fonction d’Alice
 def alice(p, g, queue_bob, queue_alice):
     a = 5  # Privé à Alice
-    print("Bob choisit le nombre", a, " (connu uniquement par Alice)")
+    print("Alice choisit le nombre", a, " (connu uniquement par Alice)")
     A = puissance_mod_n(g, a, p)
     print("Alice envoie A =", A, "à Bob (connu de l'espion Eve)")
     queue_bob.put(A)  # Alice envoie A
