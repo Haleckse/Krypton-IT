@@ -7,6 +7,7 @@
 
 #define MIN 1000000
 #define MAX 10000000
+
 // Affiche l'aide pour l'utilisation de dh_gen_group
 void afficher_aide() {
     printf("Usage: dh_gen_group [-o <fichier>] [-h]\n");

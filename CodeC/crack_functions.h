@@ -17,9 +17,9 @@
  */
 void break_code_c1(unsigned char* infile, unsigned int key_length);
 
-void break_code_c2;
+// void break_code_c2;
 
-void break_code_c3;
+// void break_code_c3;
 
 
 /** @} */
