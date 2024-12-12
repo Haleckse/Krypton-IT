@@ -1,5 +1,43 @@
 import threading
 import queue
+import random
+
+
+def is_prime(n, k=5):  # Test de primalité utilisant le test de Miller-Rabin
+    if n <= 1:
+        return False
+    if n <= 3:
+        return True
+    if n % 2 == 0:
+        return False
+
+    # Trouver d tel que n-1 = d * 2^r
+    r, d = 0, n - 1
+    while d % 2 == 0:
+        r += 1
+        d //= 2
+
+    # Test de Miller-Rabin k fois
+    for _ in range(k):
+        a = random.randint(2, n - 2)
+        x = pow(a, d, n)  # a^d % n
+        if x == 1 or x == n - 1:
+            continue
+        for _ in range(r - 1):
+            x = pow(x, 2, n)
+            if x == n - 1:
+                break
+        else:
+            return False
+    return True
+
+def generate_random_prime(bits=16):
+    while True:
+        # Générer un nombre impair aléatoire de la taille spécifiée
+        candidate = random.getrandbits(bits) | 1
+        if is_prime(candidate):
+            return candidate
+
 
 # Calcul de la puissance modulaire
 def puissance_mod_n(a: int, e: int, n: int) -> int:
@@ -14,7 +52,7 @@ def puissance_mod_n(a: int, e: int, n: int) -> int:
 
 # Fonction d’Alice
 def alice(p, g, queue_bob, queue_alice):
-    a = 5  # Privé à Alice
+    a = generate_random_prime(bits=16)  # Privé à Alice
     print("Alice choisit le nombre", a, " (connu uniquement par Alice)")
     A = puissance_mod_n(g, a, p)
     print("Alice envoie A =", A, "à Bob (connu de l'espion Eve)")
@@ -28,7 +66,7 @@ def alice(p, g, queue_bob, queue_alice):
 
 # Fonction de Bob
 def bob(p, g, queue_bob, queue_alice):
-    b = 3  # Privé à Bob
+    b = generate_random_prime(bits=16)  # Privé à Bob
     print("Bob choisit le nombre", b, " (connu uniquement par Bob)")
     B = puissance_mod_n(g, b, p)
     print("Bob envoie B =", B, "à Alice (connu de l'espion Eve)")

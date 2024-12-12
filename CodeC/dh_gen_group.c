@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include "dh_prime.h"
 
+#define MIN 1000000
+#define MAX 10000000
 // Affiche l'aide pour l'utilisation de dh_gen_group
 void afficher_aide() {
     printf("Usage: dh_gen_group [-o <fichier>] [-h]\n");
@@ -16,7 +18,7 @@ void afficher_aide() {
 int main(int argc, char *argv[]) {
     char *nom_fichier = NULL;
     int cpt;
-    long min = 1000000, max = 10000000; // Plage d'exemple pour la génération du nombre premier
+    long min = MIN, max = MAX; // Plage d'exemple pour la génération du nombre premier
 
     // Parsing des arguments
     for (int i = 1; i < argc; i++) {
