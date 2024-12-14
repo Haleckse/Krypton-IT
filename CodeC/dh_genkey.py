@@ -1,6 +1,7 @@
 import threading
 import queue
 import random
+import argparse
 
 
 def is_prime(n, k=5):  # Test de primalité utilisant le test de Miller-Rabin
@@ -31,7 +32,7 @@ def is_prime(n, k=5):  # Test de primalité utilisant le test de Miller-Rabin
             return False
     return True
 
-def generate_random_prime(bits=16):
+def generate_random_prime(bits):
     while True:
         # Générer un nombre impair aléatoire de la taille spécifiée
         candidate = random.getrandbits(bits) | 1
@@ -50,35 +51,60 @@ def puissance_mod_n(a: int, e: int, n: int) -> int:
         base = (base * base) % n
     return result
 
+def remove_bit(n):
+    return n >> 1  # Décalage à droite de 1 bit
+def add_bit(n): 
+    return (n << 1) | 1  # Equivalent de n*2 + 1
+def number_of_bits(n):
+    return n.bit_length()
+
 # Fonction d’Alice
-def alice(p, g, queue_bob, queue_alice):
-    a = generate_random_prime(bits=16)  # Privé à Alice
-    print("Alice choisit le nombre", a, " (connu uniquement par Alice)")
+def alice(p, g, queue_bob, queue_alice, longueur_clef):
+    a = generate_random_prime(bits=longueur_clef)  # Privé à Alice
+    print("\033[38;5;205mAlice choisit le nombre", a, "(connu uniquement par Alice)\033[0m")
     A = puissance_mod_n(g, a, p)
-    print("Alice envoie A =", A, "à Bob (connu de l'espion Eve)")
+    print("\033[38;5;205mAlice envoie A =", A, "à Bob \033[38;5;55m(connu de l'espion Eve)\033[0m")
     queue_bob.put(A)  # Alice envoie A
 
     B = queue_alice.get()  # Alice reçoit B de Bob
-    print("Alice reçoit B =", B, "de Bob")
+    print("\033[38;5;205mAlice reçoit B =", B, "de Bob\033[0m")
     
     shared_key_alice = puissance_mod_n(B, a, p)
-    print("Clé partagée calculée par Alice =", shared_key_alice)
+    while number_of_bits(shared_key_alice) != longueur_clef : 
+        if number_of_bits(shared_key_alice) < longueur_clef : 
+            shared_key_alice = add_bit(shared_key_alice)
+        else : shared_key_alice = remove_bit(shared_key_alice)
+    print("\033[38;5;205mClé partagée calculée par Alice =", shared_key_alice, "\033[0m")
 
 # Fonction de Bob
-def bob(p, g, queue_bob, queue_alice):
-    b = generate_random_prime(bits=16)  # Privé à Bob
-    print("Bob choisit le nombre", b, " (connu uniquement par Bob)")
+def bob(p, g, queue_bob, queue_alice, longueur_clef):
+    b = generate_random_prime(bits=longueur_clef)  # Privé à Bob
+    print("\033[34mBob choisit le nombre", b, "(connu uniquement par Bob)\033[0m")
     B = puissance_mod_n(g, b, p)
-    print("Bob envoie B =", B, "à Alice (connu de l'espion Eve)")
+    print("\033[34mBob envoie B =", B, " \033[38;5;55m(connu de l'espion Eve)\033[0m")
     queue_alice.put(B)  # Bob envoie B
     
     A = queue_bob.get()  # Bob reçoit A de Alice
-    print("Bob reçoit A =", A, "de Alice")
+    print("\033[34mBob reçoit A =", A, "de Alice\033[0m")
     
     shared_key_bob = puissance_mod_n(A, b, p)
-    print("Clé partagée calculée par Bob =", shared_key_bob)
+    while number_of_bits(shared_key_bob) != longueur_clef : 
+        if number_of_bits(shared_key_bob) < longueur_clef : 
+            shared_key_bob = add_bit(shared_key_bob)
+        else : shared_key_bob = remove_bit(shared_key_bob)
+    print("\033[34mClé partagée calculée par Bob =", shared_key_bob, "\033[0m")
 
 def main():
+
+    parser = argparse.ArgumentParser(description="Protocole Diffie-Hellman avec longueur de clé paramétrable.")
+    parser.add_argument("-l", "--longueur_clef", type=int, default=24, help="Longueur de la clé en bits (par défaut 24 bits)")
+    
+     # Lecture des arguments
+    args = parser.parse_args()
+    # Récupérer la longueur de clé de l'utilisateur
+    longueur_clef = args.longueur_clef
+    print(f"Longueur de la clé choisie: {longueur_clef} bits")
+
     # Lecture des paramètres depuis le fichier généré
     with open("Output/param.txt", "r") as file:
         params = file.readlines()
@@ -92,8 +118,8 @@ def main():
     queue_alice = queue.Queue()
     
     # Création des threads pour Alice et Bob
-    thread_alice = threading.Thread(target=alice, args=(p, g, queue_bob, queue_alice))
-    thread_bob = threading.Thread(target=bob, args=(p, g, queue_bob, queue_alice))
+    thread_alice = threading.Thread(target=alice, args=(p, g, queue_bob, queue_alice, longueur_clef))
+    thread_bob = threading.Thread(target=bob, args=(p, g, queue_bob, queue_alice, longueur_clef))
     
     # Lancement des threads
     thread_alice.start()
