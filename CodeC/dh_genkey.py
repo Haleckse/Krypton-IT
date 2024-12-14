@@ -2,8 +2,9 @@ import threading
 import queue
 import random
 import argparse
+import os
 
-
+print("Chemin courant :", os.getcwd())
 def is_prime(n, k=5):  # Test de primalité utilisant le test de Miller-Rabin
     if n <= 1:
         return False
@@ -58,6 +59,20 @@ def add_bit(n):
 def number_of_bits(n):
     return n.bit_length()
 
+def save_key_to_file(shared_key):
+    """Écrit la clé partagée dans un fichier."""
+    output_dir = "./Output"
+    output_file = os.path.join(output_dir, "key.txt")
+    
+    # Assurer que le dossier Output existe
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # Écriture de la clé dans le fichier
+    with open(output_file, "w") as file:
+        file.write(f"{shared_key}\n")
+    print("\033[38;5;47mClé partagée écrite dans ../Output/key.txt\033[0m")
+
 # Fonction d’Alice
 def alice(p, g, queue_bob, queue_alice, longueur_clef):
     a = generate_random_prime(bits=longueur_clef)  # Privé à Alice
@@ -93,6 +108,7 @@ def bob(p, g, queue_bob, queue_alice, longueur_clef):
             shared_key_bob = add_bit(shared_key_bob)
         else : shared_key_bob = remove_bit(shared_key_bob)
     print("\033[34mClé partagée calculée par Bob =", shared_key_bob, "\033[0m")
+    save_key_to_file(shared_key_bob)
 
 def main():
 
