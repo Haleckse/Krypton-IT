@@ -122,12 +122,12 @@ void* rechercherClefThread(void* param){
 
 
 // Fonction permettant la réalisation du premier crack
-// Retourne un tableau contenant les clefs possibles
+// Les clefs seront contenues dans un fichiers Output fournie dans les paramètres
+// Retourne 0 si succès, 1 sinon
 //
-char* break_code_c1(const char* infile, unsigned int key_length) {
+int break_code_c1(const char* infile, unsigned int key_length, const char* output_filename) {
     // Allocations mémoires tableaux 
    char** tableauCaractere = tableau2D(key_length);
-   char* key_tab = malloc(555*sizeof(char*));
    pthread_t tab_thread[key_length];
    struct Info info[key_length];
    struct Info* res;
@@ -150,6 +150,13 @@ char* break_code_c1(const char* infile, unsigned int key_length) {
         pthread_create(&tab_thread[i], NULL, rechercherClefThread, (void*)&info[i]);
     }
 
+    // Ouverture fichier sortie
+    FILE* output = fopen(output_filename, "wb");
+    if(!output){
+        fprintf(stderr,"\nerreur lors de l'ouverture du fichier output\n");
+        return 1;
+    }
+
     // Recuperation retour threads
     for (int i=0; i<key_length; i++){
         if(pthread_join(tab_thread[i], (void**) &res) == -1){
@@ -158,19 +165,25 @@ char* break_code_c1(const char* infile, unsigned int key_length) {
         }
 
         tableauCaractere[i] = res->tab;
-        printf("Thead (%ld) => tab  : %s\n", tab_thread[i], tableauCaractere[i]);
+        fprintf(output, "Clef[%d] : %s", i, tableauCaractere[i]);
+        fprintf(output, "%c",'\n');
+        //printf("Thead (%ld) => tab  : %s\n", tab_thread[i], tableauCaractere[i]);
     }
 
-    // Free memoire
+    // Création des clefs possible
 
-    return key_tab;
+    // Free memoire
+    fclose(output);
+    printf("Fichier de clés candidates généré : %s\n", output_filename);
+
+    return 0;
 }
 
-int main(int argc, char* argv[]) {
-    char* res;
-    unsigned int key_length = 4;
+int main(int argc, char *argv[]) {
+    unsigned int clef_len = 3;
+    const char* output_filename = "key_candidates.bin";
 
-    res = break_code_c1("Output/crypt.txt", 5);
-
+    printf("Running C1 attack...\n");
+    break_code_c1("message.txt", clef_len, output_filename);
     return 0;
 }

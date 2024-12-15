@@ -15,7 +15,7 @@
  *  @param : taille clé à chercher (:int)
  *  @return null
  */
-void break_code_c1(unsigned char* infile, unsigned int key_length);
+char* break_code_c1(const char* infile, unsigned int key_length, const char* output_filename);
 
 // void break_code_c2;
 
