@@ -15,7 +15,7 @@
 int main(int argc, char* argv[]){
     
     /* Necessary variables for the program */
-    size_t key;
+    unsigned int key;
     char* fich_in;
     char* methode_crypt; 
     char* dico;
@@ -68,7 +68,9 @@ int main(int argc, char* argv[]){
 
         const char* output_filename = "key_candidates.bin";
 
-        break_code_c1(fich_in, key,output_filename);
+        printf("debut crack c1\n");
+
+        break_code_c1(fich_in, key, output_filename);
     }
 
     /* End of the program */

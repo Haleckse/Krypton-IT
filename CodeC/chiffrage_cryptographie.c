@@ -81,7 +81,7 @@ int xor_fichier(const char* fich_in, const char* fichier_out, unsigned char* key
     unsigned char bloc_crypt[TAILLE_BLOC];
 
     char path_output[256]; // Ensure it has enough space for the result
-    snprintf(path_output, sizeof(path_output), "Output/%s", fichier_out);
+    snprintf(path_output, sizeof(path_output), "%s", fichier_out);
 
     // Ouverture du fichier contenant le message à chiffrer
     int fichier_msg = open(fich_in, O_RDONLY);
@@ -117,7 +117,7 @@ int xor_fichier(const char* fich_in, const char* fichier_out, unsigned char* key
 //
 int mask(const char* fich_in, const char* fich_out){
     char out[256]; // Ensure it has enough space for the result
-    snprintf(out, sizeof(out), "Output/%s", fich_out);
+    snprintf(out, sizeof(out), "%s", fich_out);
 
     /* Ouverture fichiers */
     FILE* msg = fopen(fich_in, "r");
@@ -177,7 +177,7 @@ int mask(const char* fich_in, const char* fich_out){
 int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res){
     /* Redirection du fichier sortant */
     char out[256];
-    snprintf(out, sizeof(out), "Output/%s", res);
+    snprintf(out, sizeof(out), "%s", res);
 
     /* Ouverture des différents fichiers utilisés */
     FILE* fichier_in = fopen(msg, "rb");
@@ -248,7 +248,7 @@ int cbc_crypt(char *msg, unsigned char* key, char* iv, char* res){
 int cbc_decrypt(char *msg, unsigned char *key, char *iv, char *res){
     /* Redirection du fichier sortant */
     char out[256];
-    snprintf(out, sizeof(out), "Output/%s", res);
+    snprintf(out, sizeof(out), "%s", res);
 
     /* Ouverture des fichiers nécessaire */
     FILE* fichier_in = fopen(msg, "rb");
