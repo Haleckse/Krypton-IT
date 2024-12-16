@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include "chiffrage_cryptographie.h"
+//#include "chiffrage_cryptographie.h"
 
 #define maxCaractères 62
 
@@ -165,6 +165,7 @@ int break_code_c1(const char* infile, unsigned int key_length, const char* outpu
         }
 
         tableauCaractere[i] = res->tab;
+
         fprintf(output, "Clef[%d] : %s", i, tableauCaractere[i]);
         fprintf(output, "%c",'\n');
         //printf("Thead (%ld) => tab  : %s\n", tab_thread[i], tableauCaractere[i]);

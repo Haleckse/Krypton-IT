@@ -10,11 +10,11 @@
 /* ============================================================================== */
 
 
-// Main du Programme 
+// Main partie Chiffrement
 //
 int main(int argc, char* argv[]){
     
-    printf("\n--- début programme ---\n");
+    //printf("\n--- début programme ---\n");
 
     /* Necessary variables for the program */
     unsigned char* key;
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]){
 
     } else {
         /* pick the method asked by the user */
-        printf("\n ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
+        printf("\t ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
 
         if ( (strcmp(methode_crypt, "cbc-crypt") == 0) || (strcmp(methode_crypt, "cbc-decrypt") == 0) ){
             /* Check initialisating vector if present */
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    printf("\n--- Fin programme ---\n");
+    //printf("\n--- Fin programme ---\n");
 
     /* End of the program */
     return 0;

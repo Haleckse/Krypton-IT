@@ -15,7 +15,11 @@
  *  @param : taille clé à chercher (:int)
  *  @return null
  */
-char* break_code_c1(const char* infile, unsigned int key_length, const char* output_filename);
+void break_code_c1(const char* infile, size_t clef_len, const char* output_filename);
+
+void break_code_c2(const char *ciphered_text, int text_length, int key_length, const double *freq_th);
+
+void break_code_c3();
 
 // void break_code_c2;
 

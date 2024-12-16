@@ -5,7 +5,7 @@
 #include <getopt.h>
 
 #include "chiffrage_cryptographie.h"
-#include "crack_functions.h"
+#include "break_code.h"
 
 /**************************/
 /* Début du programme main*/
@@ -16,7 +16,7 @@
 // Fonction affichant sur Stdout l'aide des commandes
 // ParamIn null ; ParamOut message stdout
 //
-void commandes_affichage(){
+void display_help(){
     printf("\n\t--- AIDE DES COMMADES ---\n\n");
     printf("_ help : donne la liste des commandes\n");
     printf("_ list-keys : donne la liste des clefs générées et disponibles et indique celle qui ont déjà été utilisée\n");
@@ -24,7 +24,7 @@ void commandes_affichage(){
     printf("_ del-key < key > : supprime la clef < key >\n");
     printf("_ encrypt < in >< out >< key >< method > [< vecteur d'initialisation >]\n");
     printf("_ decrypt < in >< out >< key >< method > [< vecteur d'initialisation >]\n");
-    printf("_ crack< in >< out >< length >< dico >\n");
+    printf("_ crack < in >< out >< length >< dico >\n");
     printf("_ quit\n");   
 }
 
@@ -52,37 +52,60 @@ int main() {
     int continuer = 1;   
 
     /* Affichage des commandes */
-    commandes_affichage();
+    display_help();
 
     /* Boucle de commandes */
     while (continuer) {
+
         // Demander la commande à l'utilisateur
         printf("Saisir la commande souhaitée : ");
         if (fgets(commande_user, MAX, stdin) == NULL) {
             printf("Erreur lors de la lecture de la commande.\n");
             break;
-        }
+        } else {
+            
+            printf("\n --------------------------------------------------\n\n");
 
-        // Extraire le premier mot dans la variable "executable"
-        garderPremierMot(commande_user, executable);
+            // Extraire le premier mot dans la variable "executable"
+            garderPremierMot(commande_user, executable);
 
-        // Vérifier la commande pour quitter
-        if (strcmp(executable, "quit") == 0) {
-            continuer = 0;
+            // Vérifier la commande pour quitter
+            if (strcmp(executable, "quit") == 0) {
+                continuer = 0;
 
-        } else if (strcmp(executable, "help") == 0) { // Réafficher les commandes disponibles
-            commandes_affichage();
-        
-        } else if (strcmp(executable, "gen-key") == 0){
-            unsigned char* key;
-            gen_key(10, key);
+            // Réafficher les commandes disponibles
+            } else if (strcmp(executable, "help") == 0) {
+                display_help();
 
-        } else if (strcmp(executable, "encrypt") == 0 || strcmp(executable, "decrypt") == 0){ // encrypt ou decrypt
-            snprintf(command, sizeof(command), "bin/sym_crypt %s", commande_user);
-            system(command);
+            // Traitement de la méthode gen-key
+            } else if (strcmp(executable, "gen-key") == 0){
+                int size_key = atoi(commande_user + 8);
+                unsigned char* key = malloc(size_key * sizeof(char));
 
-        } else { // Cas par défaut 
-            printf("Commande inconnue : \"%s\"\n", executable);
+                gen_key(size_key, key);
+
+                printf("La clef générée est : \"%s\"\n", key);
+
+            // Traitement des commandes encrypt ou decrypt
+            } else if (strcmp(executable, "encrypt") == 0 || strcmp(executable, "decrypt") == 0){
+                snprintf(command, sizeof(command), "bin/sym_crypt %s", commande_user + 8);
+                if (system(command) == -1){
+                    perror("erreur redirection sym_crypt.");
+                }
+
+            // Traitement des commandes Crack
+            } else if (strcmp(executable, "crack") == 0){ 
+                snprintf(command, sizeof(command), "bin/break_code %s", commande_user + 6);
+                if (system(command) == -1){
+                    perror("erreur redirection break_code.");
+                }
+
+            // Cas par défaut
+            } else { 
+                printf("Commande inconnue : \"%s\"\n", executable);
+            }
+
+            printf("\n --------------------------------------------------\n\n");
         }
     }
 

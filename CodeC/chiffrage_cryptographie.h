@@ -20,7 +20,7 @@ void xor(unsigned char* msg, unsigned char* key, int msg_length, int key_length,
 /**
  *  @brief Fonction permettant la création d'une clé de chiffrement
  *         alphanumérique aléatoire.
- *  @param : taille de la clé souhaitée (:int)
+ *  @param : taille de la clé souhaitée (:int), @ mémoire qui contiendra la clé
  *  @return null
  */
 void gen_key(int len, unsigned char *key);
