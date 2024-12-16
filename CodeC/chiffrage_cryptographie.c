@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+#include <ctype.h>
 
 #include "chiffrage_cryptographie.h"
 
@@ -32,11 +33,15 @@ void xor(unsigned char* msg, unsigned char* key, int msg_length, int key_length,
 // 
 void gen_key(int len, unsigned char *key){
   srand(time(0));
-  unsigned char random_char;
+  char random_char;
+  int i=0;
 
-  for(int i = 0; i < len; i++){
-    random_char = (unsigned char)(rand() % 256);
-    key[i] = random_char;
+  while (i != len){
+    random_char = rand() % 123;
+    if (isalnum(random_char)){
+        key[i] = (unsigned char) random_char;
+        i++;
+    }
   }
 
   key[len] = '\0';

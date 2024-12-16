@@ -121,6 +121,56 @@ void* rechercherClefThread(void* param){
     pthread_exit((void*)info);
 }
 
+// Crée l'ensemble des clefs possible
+// Retourne un tableau char** contenant l'intégralité des solutions
+//
+char** clef_candidates(char** tableauCaractere, int nb_cles, int* nb_combinaisons) {
+    if (nb_cles == 0) {
+        *nb_combinaisons = 0;
+        return NULL;
+    }
+
+    // On commence par copier le premier tableau de caractères
+    *nb_combinaisons = strlen(tableauCaractere[0]);
+    char** resultats = malloc((*nb_combinaisons) * sizeof(char*));
+    for (int i = 0; i < *nb_combinaisons; i++) {
+        resultats[i] = malloc(2 * sizeof(char)); 
+        snprintf(resultats[i], 2, "%c", tableauCaractere[0][i]);
+    }
+
+    // On combine successivement avec les tableaux restants
+    for (int k = 1; k < nb_cles; k++) {
+        int taille_actuelle = *nb_combinaisons;
+        int nouvelle_taille = taille_actuelle * strlen(tableauCaractere[k]);
+
+        // On alloue de l'espace pour les nouvelles combinaisons
+        char** nouvelles_combinaisons = malloc(nouvelle_taille * sizeof(char*));
+        for (int i = 0; i < nouvelle_taille; i++) {
+            nouvelles_combinaisons[i] = malloc((k + 2) * sizeof(char));
+        }
+
+        // Création des nouvelles combinaisons
+        int index = 0;
+        for (int i = 0; i < taille_actuelle; i++) {
+            for (int j = 0; j < strlen(tableauCaractere[k]); j++) {
+                snprintf(nouvelles_combinaisons[index], k + 2, "%s%c", resultats[i], tableauCaractere[k][j]);
+                index++;
+            }
+        }
+
+        // Libération de l'ancienne liste et mise à jour
+        for (int i = 0; i < taille_actuelle; i++) {
+            free(resultats[i]);
+        }
+        free(resultats);
+
+        resultats = nouvelles_combinaisons;
+        *nb_combinaisons = nouvelle_taille;
+    }
+
+    return resultats;
+}
+
 
 // Fonction permettant la réalisation du premier crack
 // Les clefs seront contenues dans un fichiers Output fournie dans les paramètres
@@ -139,7 +189,6 @@ int break_code_c1(const char* infile, unsigned int key_length, const char* outpu
         fprintf(stderr,"\nerreur lors de l'ouverture d'un fichier\n");
         exit(EXIT_FAILURE);
     } 
-
 
     // Initialisation du sémaphore mutex 
     pthread_mutex_init(&mutex, NULL);
@@ -167,15 +216,26 @@ int break_code_c1(const char* infile, unsigned int key_length, const char* outpu
         }
 
         tableauCaractere[i] = res->tab;
-
-        fprintf(output, "Clef[%d] : %s", i, tableauCaractere[i]);
-        fprintf(output, "%c",'\n');
-        //printf("Thead (%ld) => tab  : %s\n", tab_thread[i], tableauCaractere[i]);
     }
 
     // Création des clefs possible
+    int nb_combinaisons = 0;
+    int ligne_10 = 0;
+    char** combinaisons = clef_candidates(tableauCaractere, key_length, &nb_combinaisons);
+
+    // Affichage des combinaisons générées
+    for (int i = 0; i < nb_combinaisons; i++) {
+        if (ligne_10 == 10){
+            fprintf(output, "%c",'\n');
+            ligne_10 = 0;
+        } 
+
+        fprintf(output, "%s, ",combinaisons[i]);    
+        free(combinaisons[i]);
+    }
 
     // Free memoire
+    free(combinaisons); 
     fclose(output);
     printf("Fichier de clés candidates généré : %s\n", output_filename);
 

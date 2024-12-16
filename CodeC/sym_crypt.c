@@ -113,6 +113,13 @@ int main(int argc, char* argv[]){
         commandes_affichage();
 
     } else {
+        
+        /* check if all mandatories variables are here */
+        if (!fich_in || !fich_out || !methode_crypt){
+            fprintf(stderr,"erreur, il manque un argument obligatoire;\n");
+            exit(EXIT_FAILURE);
+        }
+
         /* pick the method asked by the user */
         printf("\t ~~~ Selection de la méthode %s ~~~\n", methode_crypt);
 

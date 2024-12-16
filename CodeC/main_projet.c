@@ -22,10 +22,11 @@ void display_help(){
     printf("_ list-keys : donne la liste des clefs générées et disponibles et indique celle qui ont déjà été utilisée\n");
     printf("_ gen-key < n > : génère une clef de longueur n\n");
     printf("_ del-key < key > : supprime la clef < key >\n");
+    printf("_ diffie < param > [< key length >] : Execute l'échange Diffie-Hellman\n");
     printf("_ encrypt < in >< out >< key >< method > [< vecteur d'initialisation >]\n");
     printf("_ decrypt < in >< out >< key >< method > [< vecteur d'initialisation >]\n");
     printf("_ crack < in >< out >< length >< dico >\n");
-    printf("_ quit\n");   
+    printf("_ quit\n\n");   
 }
 
 void garderPremierMot(const char* source, char* destination) {
@@ -58,7 +59,9 @@ int main() {
     while (continuer) {
 
         // Demander la commande à l'utilisateur
-        printf("Saisir la commande souhaitée : ");
+        printf("\033[34m Saisir la commande souhaitée : ");
+        printf("\033[37m");
+
         if (fgets(commande_user, MAX, stdin) == NULL) {
             printf("Erreur lors de la lecture de la commande.\n");
             break;
@@ -86,6 +89,13 @@ int main() {
 
                 printf("La clef générée est : \"%s\"\n", key);
 
+            // Traitement de la méthode D-H
+            } else if (strcmp(executable, "diffie") == 0){
+                snprintf(command, sizeof(command), "bin/dh_gen_group %s", commande_user + 7);
+                if (system(command) == -1){
+                    perror("erreur redirection dh_gen_group.");
+                }
+
             // Traitement des commandes encrypt ou decrypt
             } else if (strcmp(executable, "encrypt") == 0 || strcmp(executable, "decrypt") == 0){
                 snprintf(command, sizeof(command), "bin/sym_crypt %s", commande_user + 8);
@@ -95,10 +105,11 @@ int main() {
 
             // Traitement des commandes Crack
             } else if (strcmp(executable, "crack") == 0){ 
+                /* Il s'agit du crack C1*/
                 snprintf(command, sizeof(command), "bin/break_code %s", commande_user + 6);
                 if (system(command) == -1){
                     perror("erreur redirection break_code.");
-                }
+                }                
 
             // Cas par défaut
             } else { 
