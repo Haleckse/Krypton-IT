@@ -27,6 +27,24 @@ void gen_key(int len, unsigned char *key);
 
 
 /**
+ *  @brief Fonction permettant l'affichage de toutes les clefs crées par la méthode gen_key
+ *          ou par le crack_c1
+ *  @param : nom du fichier dont l'on souhaite l'ouverture
+ *  @return null
+ */
+void list_key(char* read_file);
+
+
+/**
+ *  @brief Fonction permettant la suppression d'une clef contenu 
+ *          dans le fichier input_file
+ *  @param : nom du fichier dont l'on souhaite l'ouverture et clef a supprimer
+ *  @return null
+ */
+void delete_key(char* input_file, char* delete_key);
+
+
+/**
  *  @brief Fonction permettant l'affichage sur STDOUT du message 
  *         passe en parametre
  *  @param : nom du fichier a afficher (:String)

@@ -9,13 +9,6 @@
 /* ============================================================================== */
 /* ============================================================================== */
 
-// double english_freq[26] = {
-//     0.082, 0.015, 0.028, 0.043, 0.127, 0.022, 0.020, 0.061,
-//     0.070, 0.0015, 0.0077, 0.040, 0.024, 0.067, 0.075, 0.019,
-//     0.00095, 0.060, 0.063, 0.090, 0.028, 0.0098, 0.024, 0.0015,
-//     0.020, 0.00074
-// };
-
 const double french_fq[26] = {
     0.1467, 0.0764, 0.0326, 0.0367, 0.1470, 0.0107, 0.0087, 0.0074, 
     0.0753, 0.0061, 0.0005, 0.0546, 0.0297, 0.0701, 0.0574, 0.0253, 
@@ -30,11 +23,11 @@ int main(int argc, char* argv[]){
     /* Necessary variables for the program */
     unsigned int key;
     char* fich_in = NULL;
-    const char* output_filename = NULL;
+    char* output_filename = NULL;
     char* methode_crypt = NULL; 
     char* dico = NULL;
     
-    char optstring[] = ":i:o:m:k:d:l:h";
+    char optstring[] = ":i:o:m:k:d:h";
     int opt; 
     extern char *optarg;
     extern int optind, optopt;
@@ -69,8 +62,6 @@ int main(int argc, char* argv[]){
                 dflag = 1;
                 dico = optarg;
                 break;
-
-            case 'l':  
             
             case 'h':
             /* stdout for commands */
@@ -103,14 +94,20 @@ int main(int argc, char* argv[]){
     // Realise l'ensemble des 3 cracks
     } else if (strcmp(methode_crypt, "all") == 0){
         
+        if(!dico){
+            fprintf(stderr,"Erreur manque le dictionnaire\n");
+            exit(EXIT_FAILURE);
+       }
+
         printf("~~~ Running C1 Attack... ~~~\n\n");
         break_code_c1(fich_in, key, output_filename);
 
-        printf("~~~ Running C2 Attack... ~~~\n\n");
-        break_code_c2(fich_in, key, french_fq);
+        printf("\n~~~ Running C2 Attack... ~~~\n\n");
+        break_code_c2(fich_in, output_filename, key, french_fq);
 
-        printf("~~~ Running C3 Attack... ~~~\n\n");
-        //break_code_c2(fich_in, key, french_fq);
+        printf("\n~~~ Running C3 Attack... ~~~\n\n");
+        break_code_c3(dico);
+
     } else {
         fprintf(stderr,"Erreur, la méthode choisie n'existe pas.\n");
     }

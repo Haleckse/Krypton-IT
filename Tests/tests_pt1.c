@@ -30,7 +30,7 @@ int main(void) {
  }
 
  void test_xor() {
-    printf("\n----------Tests des fonction de cryptage et de decryptage par la methode xor----------\n\n"); 
+    printf("\n----------Tests des fonctions de cryptage et de decryptage par la methode xor----------\n\n"); 
 
     printf(ORANGE"Cryptage de chaton.jpg...\n"RESET); 
     sleep(1); 
@@ -59,7 +59,7 @@ int main(void) {
 }
 
 void test_cbc() {
-    printf("\n----------Tests des fonction de cryptage et de decryptage par la methode cbc----------\n\n");
+    printf("\n----------Tests des fonctions de cryptage et de decryptage par la methode cbc----------\n\n");
 
     printf(ORANGE"Cryptage de chaton.jpg...\n"RESET); 
     sleep(1); 

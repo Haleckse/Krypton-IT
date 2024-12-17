@@ -65,9 +65,9 @@ int separer_mots(const char* texte, char mots[][MAX_WORD_LENGTH]) {
     return i;
 }
 
-void break_code_c3(){
+void break_code_c3(char* dico){
     char dictionnaire[83500][MAX_WORD_LENGTH];
-    int nombre_mots = charger_dictionnaire("dicoFrSA.txt", dictionnaire, 83500);
+    int nombre_mots = charger_dictionnaire(dico, dictionnaire, 83500);
     if (nombre_mots == 0) {
         printf("Erreur : aucun mot chargé dans le dictionnaire.\n");
     }

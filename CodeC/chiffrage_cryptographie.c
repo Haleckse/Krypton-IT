@@ -47,11 +47,86 @@ void gen_key(int len, unsigned char *key){
   key[len] = '\0';
 }
 
-// 
-void list_key(char* read_file, char* used_keys){
+// Fonction permettant de donner sur la sortie STDOUT toutes les clefs que contient un fichier
+// Auncun retour hormis l'affichage
+//
+void list_key(char* read_file){
     // Ouverture des fichiers
+    FILE* file = fopen(read_file, "rb");
+    if (!file){
+        perror("erreur ouverture fichier list_key");
+        return;
+    }
+
+    int ind = 0;
+    char buffer;
+    char* key = malloc(100 * sizeof(char));
+    // Ecriture des clefs sur STDOUT
+    while (fread(&buffer, 1, 1, file) > 0){
+        // Atteint la fin d'une clé
+        if (buffer == '\0' || buffer == '\n' || buffer == ','){
+            printf("- %s\n", key);
+            ind = 0;
+            free(key);
+            key = malloc(100 * sizeof(char));
+
+        // Toujours un caractère de la clef courante
+        } else {
+            key[ind++] = buffer;
+        }
+    }
+    free(key);
 }
 
+// Fonction supprimant une clef si elle existe dans le fichier
+// Retourne le fichier modifié
+//
+void delete_key(char* input_file, char* delete_key) {
+    // Fichiers temporaire et source
+    FILE *file = fopen(input_file, "r");
+    FILE *temp_file = fopen("temp.txt", "w");
+
+    // Vérification des erreurs d'ouverture des fichiers
+    if (!file) {
+        perror("Erreur lors de l'ouverture du fichier d'entrée");
+        return;
+    }
+    if (!temp_file) {
+        perror("Erreur lors de la création du fichier temporaire");
+        fclose(file);
+        return;
+    }
+
+    char line[256]; // Buffer pour lire chaque ligne
+
+    // Lire le fichier ligne par ligne
+    while (fgets(line, sizeof(line), file)) {
+        // Supprimer les caractères de fin de ligne (si présents)
+        line[strcspn(line, "\r\n")] = '\0';
+
+        // Comparer la clé actuelle avec la clé à supprimer
+        if (strcmp(line, delete_key) != 0) {
+            // Si la clé n'est pas celle à supprimer, l'écrire dans le fichier temporaire
+            fprintf(temp_file, "%s\n", line);
+        }
+    }
+
+    // Fermer les fichiers
+    fclose(file);
+    fclose(temp_file);
+
+    // Remplacer le fichier original par le fichier temporaire
+    if (remove(input_file) != 0) {
+        perror("Erreur lors de la suppression du fichier original");
+        return;
+    }
+    if (rename("temp.txt", input_file) != 0) {
+        perror("Erreur lors du renommage du fichier temporaire");
+        return;
+    }
+
+    printf("Clé '%s' supprimée avec succès du fichier '%s'.\n", delete_key, input_file);
+}
 
 // Fonction permettant l'affichage sur STDOUT d'une chaine de caractère 
 // contenu dans la variable affiche_msg

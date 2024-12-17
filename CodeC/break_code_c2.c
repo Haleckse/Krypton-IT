@@ -24,7 +24,7 @@ int is_valid_text(const char *text, int length) {
 // Lit l'intégralité des clefs candidates contenues dans le fichier "filename"
 // Retrourne un tableau contenant toutes les clefs
 //
-char** read_key_candidates_from_file(const char *filename, int key_length, int* total_candidate_length) {
+char** read_key_candidates_from_file(char *filename, int key_length, int* total_candidate_length) {
     // Fichier contenant les clefs candidates
     FILE* file = fopen(filename, "rb");
 
@@ -40,7 +40,7 @@ char** read_key_candidates_from_file(const char *filename, int key_length, int* 
     fseek(file, 0, SEEK_SET);
 
     // Nombre de clef(s) candidate(s)
-    *total_candidate_length = *total_candidate_length/(key_length+2); // (+2) car ',' et ' '
+    *total_candidate_length = *total_candidate_length/(key_length+1);
     printf("Nombres de clefs candidates : %d\n",*total_candidate_length);
 
     // Tableau qui contiendra l'ensemble des clefs candidates
@@ -65,9 +65,6 @@ char** read_key_candidates_from_file(const char *filename, int key_length, int* 
 
         // Termine la cha�ne par '\0'
         key_candidates[i][key_length] = '\0';
-
-        // Avance la lecture fichier de 2
-        fseek(file, 2, SEEK_CUR);
     }
 
     fclose(file);
@@ -135,7 +132,7 @@ void affichage_clefs(int index, char **potential_keys){
 
 // Execute le crack C2
 //
-void break_code_c2(const char* cyphered_file, int key_length, const double* freq_th) {
+void break_code_c2(const char* cyphered_file, char* key_file, int key_length, const double* freq_th) {
     int num_candidates;
     double freq[26];
     int index = 0; int trouve = 0;
@@ -164,7 +161,7 @@ void break_code_c2(const char* cyphered_file, int key_length, const double* freq
     fclose(input_file);
 
     // Recup�ration des clefs candidates
-    char** key_candidates = read_key_candidates_from_file("key_candidates.bin", key_length, &num_candidates);
+    char** key_candidates = read_key_candidates_from_file(key_file, key_length, &num_candidates);
     char *decrypted_text = malloc((text_length + 1) * sizeof(char));
     char** potential_keys = malloc(sizeof(char) * num_candidates);
     
@@ -246,7 +243,7 @@ void break_code_c2(const char* cyphered_file, int key_length, const double* freq
 
 //     printf("~~~ Running C2 Attack... ~~~\n\n");
 
-//     break_code_c2(input, key_length, french_freq);
+//     break_code_c2(input, key_length, french_fq);
 
 //     return 0;
 // }

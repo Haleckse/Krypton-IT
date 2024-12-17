@@ -220,7 +220,7 @@ int break_code_c1(const char* infile, unsigned int key_length, const char* outpu
 
     // Affichage des combinaisons générées
     for (int i = 0; i < nb_combinaisons; i++) {
-        fprintf(output, "%s, ",combinaisons[i]);    
+        fprintf(output, "%s\n",combinaisons[i]);    
         free(combinaisons[i]);
     }
 
