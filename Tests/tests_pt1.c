@@ -12,67 +12,76 @@
 
 #define MAX_PATH_LEN 256
 #define MAX_CMD_LEN 512
-#define NUM_FILES 2
+#define NUM_FILES 1
 
-char* create_command(const char* method, const char* fich_in, const char* extension) {
-    // Allocate memory for the command string
-    char* command = (char*)malloc(MAX_CMD_LEN);
-    if (!command) {
-        perror("Failed to allocate memory for command");
-        exit(EXIT_FAILURE);
-    }
+#define BLUE   "\033[0;34m"     // Bleu standard
+#define ORANGE "\033[38;5;214m" // Approximation d'orange (palette étendue 256 couleurs)
+#define VIOLET "\033[0;35m"     // Violet standard
+#define RESET  "\033[0m"        // Réinitialisation des couleurs
 
-    // Generate the command based on the provided arguments
-    if (strcmp(method, "xor") == 0) {
-        snprintf(command, MAX_CMD_LEN, 
-                 "./../bin/sym_crypt -i %s -o ../Output/fich_out.%s -m xor -f ../key.txt", 
-                 fich_in, extension);
-    } else {
-        fprintf(stderr, "Unknown method: %s\n", method);
-        free(command);
-        return NULL;
-    }
+void test_xor(); 
+void test_cbc(); 
 
-    return command;
-}
 
 int main(void) {
-    // Define the paths for input files
-    char* path[NUM_FILES] = {
-        "../Datas/Source/chaton.jpg",
-        "../Datas/Source/ring.txt",
-    };
 
-    // Define an array for the commands
-    char* commands[NUM_FILES];
+    test_xor(); 
+    test_cbc(); 
+ }
 
-    // Generate commands for each file
-    for (int i = 0; i < NUM_FILES; i++) {
-        const char* extension = strrchr(path[i], '.'); // Extract file extension
-        if (extension) {
-            extension++; // Skip the dot
-        } else {
-            fprintf(stderr, "File %s has no extension. Skipping.\n", path[i]);
-            continue;
-        }
+ void test_xor() {
+    printf("\n----------Tests des fonction de cryptage et de decryptage par la methode xor----------\n\n"); 
 
-        commands[i] = create_command("xor", path[i], extension);
-        printf("command : %s\n", commands[i]); 
-    }
+    printf(ORANGE"Cryptage de chaton.jpg...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Datas/Source/chaton.jpg -o ../Output/chaton_crypte_xor.jpg -m xor -f ../key.txt"); 
+    printf(BLUE"Decryptage de l'output obtenu...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Output/chaton_crypte_xor.jpg -o ../Output/chaton_decrypte_xor.jpg -m xor -f ../key.txt"); 
+    system("./checkfiles ../Datas/Source/chaton.jpg ../Output/chaton_decrypte_xor.jpg"); 
 
-    char checkfile_command[MAX_CMD_LEN];
-    
-    // Execute commands
-    for (int i = 0; i < NUM_FILES; i++) {
-        if (commands[i]) {
-            printf("Executing: %s\n", commands[i]);
-            system(commands[i]); // Run the command
-            snprintf(checkfile_command, MAX_CMD_LEN, "./checkfiles %s %s", "../Output/fich_out", path[i]);
-            system(checkfile_command); 
-            
-            free(commands[i]);   // Free allocated memory
-        }
-    }
+    printf(ORANGE"Cryptage de flower.jpg...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Datas/Source/flower.jpg -o ../Output/flower_crypte_xor.jpg -m xor -f ../key.txt"); 
+    printf(BLUE"Decryptage de l'output obtenu...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Output/flower_crypte_xor.jpg -o ../Output/flower_derypte_xor.jpg -m xor -f ../key.txt"); 
+    system("./checkfiles ../Datas/Source/flower.jpg ../Output/flower_derypte_xor.jpg"); 
 
-    return 0;
+    printf(ORANGE"Cryptage de ring.txt...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Datas/Source/ring.txt -o ../Output/ring_crypte_xor.txt -m xor -f ../key.txt"); 
+    printf(BLUE"Decryptage de l'output obtenu...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Output/ring_crypte_xor.txt -o ../Output/ring_derypte_xor.txt -m xor -f ../key.txt"); 
+    system("./checkfiles ../Datas/Source/ring.txt ../Output/ring_derypte_xor.txt"); 
+
+}
+
+void test_cbc() {
+    printf("\n----------Tests des fonction de cryptage et de decryptage par la methode cbc----------\n\n");
+
+    printf(ORANGE"Cryptage de chaton.jpg...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Datas/Source/chaton.jpg -o ../Output/chaton_crypte_cbc.jpg -m cbc-crypt -f ../key.txt -v ../vecteur.txt"); 
+    printf(BLUE"Decryptage de l'output obtenu...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Output/chaton_crypte_cbc.jpg -o ../Output/chaton_decrypte_cbc.jpg -m cbc-decrypt -f ../key.txt -v ../vecteur.txt"); 
+    system("./checkfiles ../Datas/Source/chaton.jpg ../Output/chaton_decrypte_cbc.jpg"); 
+
+    printf(ORANGE"Cryptage de flower.jpg...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Datas/Source/flower.jpg -o ../Output/flower_crypte_cbc.jpg -m cbc-crypt -f ../key.txt -v ../vecteur.txt"); 
+    printf(BLUE"Decryptage de l'output obtenu...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Output/flower_crypte_cbc.jpg -o ../Output/flower_decrypte_cbc.jpg -m cbc-decrypt -f ../key.txt -v ../vecteur.txt"); 
+    system("./checkfiles ../Datas/Source/flower.jpg ../Output/flower_decrypte_cbc.jpg"); 
+
+    printf(ORANGE"Cryptage de ring.txt...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Datas/Source/ring.txt -o ../Output/ring_crypte_cbc.txt -m cbc-crypt -f ../key.txt -v ../vecteur.txt"); 
+    printf(BLUE"Decryptage de l'output obtenu...\n"RESET); 
+    sleep(1); 
+    system("./../bin/sym_crypt -i ../Output/ring_crypte_cbc.txt -o ../Output/ring_decrypte_cbc.txt -m cbc-decrypt -f ../key.txt -v ../vecteur.txt"); 
+    system("./checkfiles ../Datas/Source/ring.txt ../Output/ring_decrypte_cbc.txt"); 
 }

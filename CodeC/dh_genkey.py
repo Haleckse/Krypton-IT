@@ -4,7 +4,7 @@ import random
 import argparse
 import os
 
-print("Chemin courant :", os.getcwd())
+
 def is_prime(n, k=5):  # Test de primalité utilisant le test de Miller-Rabin
     if n <= 1:
         return False
@@ -59,10 +59,10 @@ def add_bit(n):
 def number_of_bits(n):
     return n.bit_length()
 
-def save_key_to_file(shared_key):
+def save_key_to_file(shared_key, fichier):
     """Écrit la clé partagée dans un fichier."""
     output_dir = "./Output"
-    output_file = os.path.join(output_dir, "key.txt")
+    output_file = os.path.join(output_dir, fichier)
     
     # Assurer que le dossier Output existe
     if not os.path.exists(output_dir):
@@ -85,11 +85,9 @@ def alice(p, g, queue_bob, queue_alice, longueur_clef):
     print("\033[38;5;205mAlice reçoit B =", B, "de Bob\033[0m")
     
     shared_key_alice = puissance_mod_n(B, a, p)
-    while number_of_bits(shared_key_alice) != longueur_clef : 
-        if number_of_bits(shared_key_alice) < longueur_clef : 
-            shared_key_alice = add_bit(shared_key_alice)
-        else : shared_key_alice = remove_bit(shared_key_alice)
+    
     print("\033[38;5;205mClé partagée calculée par Alice =", shared_key_alice, "\033[0m")
+    save_key_to_file(shared_key_alice, "alice_key.txt"); 
 
 # Fonction de Bob
 def bob(p, g, queue_bob, queue_alice, longueur_clef):
@@ -103,12 +101,9 @@ def bob(p, g, queue_bob, queue_alice, longueur_clef):
     print("\033[34mBob reçoit A =", A, "de Alice\033[0m")
     
     shared_key_bob = puissance_mod_n(A, b, p)
-    while number_of_bits(shared_key_bob) != longueur_clef : 
-        if number_of_bits(shared_key_bob) < longueur_clef : 
-            shared_key_bob = add_bit(shared_key_bob)
-        else : shared_key_bob = remove_bit(shared_key_bob)
+    
     print("\033[34mClé partagée calculée par Bob =", shared_key_bob, "\033[0m")
-    save_key_to_file(shared_key_bob)
+    save_key_to_file(shared_key_bob, "bob_key.txt"); 
 
 def main():
 

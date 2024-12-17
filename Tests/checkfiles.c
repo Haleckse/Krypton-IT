@@ -40,9 +40,9 @@ void checkfiles(const char* file1, const char* file2) {
     fclose(f2);
 
     if (identical) {
-        printf(GREEN "[OK] Les fichiers '%s' et '%s' sont identiques.\n", file1, file2);
+        printf(GREEN "[OK] Les fichiers '%s' et '%s' sont identiques.\n\n"RESET, file1, file2);
     } else {
-        printf(RED "[KO]  Les fichiers '%s' et '%s' sont différents.\n", file1, file2);
+        printf(RED "[KO]  Les fichiers '%s' et '%s' sont différents.\n\n"RESET, file1, file2);
     }
 }
 
