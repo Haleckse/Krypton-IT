@@ -1,6 +1,7 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
-        "dh_prime.h": "c"
+        "dh_prime.h": "c",
+        "stdio.h": "c"
     }
 }

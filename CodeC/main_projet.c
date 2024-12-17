@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "chiffrage_cryptographie.h"
 #include "break_code.h"
@@ -88,6 +91,11 @@ int main() {
                 gen_key(size_key, key);
 
                 printf("La clef générée est : \"%s\"\n", key);
+                printf("Clef stockée dans le fichier \"log_key.txt\"\n");
+
+                int log_key = open("key_log.txt", O_WRONLY|O_CREAT|O_APPEND, S_IRWXU|S_IROTH);
+                int nbEcrit = write(log_key, (char*) key, size_key);
+                nbEcrit = write(log_key, "\n", 1);
 
             // Traitement de la méthode D-H
             } else if (strcmp(executable, "diffie") == 0){

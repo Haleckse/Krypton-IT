@@ -47,6 +47,11 @@ void gen_key(int len, unsigned char *key){
   key[len] = '\0';
 }
 
+// 
+void list_key(char* read_file, char* used_keys){
+    // Ouverture des fichiers
+}
+
 
 // Fonction permettant l'affichage sur STDOUT d'une chaine de caractère 
 // contenu dans la variable affiche_msg

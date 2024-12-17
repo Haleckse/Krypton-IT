@@ -8,8 +8,6 @@
 //#include "chiffrage_cryptographie.h"
 #include "break_code.h"
 
-#define maxCaractères 62
-
 // structure Threads
 struct Info{
     int id;
@@ -72,7 +70,6 @@ char** tableau2D(unsigned int key_length){
 
     return tabCaractere;
 }
-
 
 // Teste la validité d'un caractère 
 // Retourne 1 si valide, 0 sinon
@@ -171,12 +168,11 @@ char** clef_candidates(char** tableauCaractere, int nb_cles, int* nb_combinaison
     return resultats;
 }
 
-
 // Fonction permettant la réalisation du premier crack
 // Les clefs seront contenues dans un fichiers Output fournie dans les paramètres
 // Retourne 0 si succès, 1 sinon
 //
-int break_code_c1(const char* infile, unsigned int key_length, const char* output_filename) {
+int break_code_c1(const char* infile, unsigned int key_length, const char* output_filename){
     // Allocations mémoires tableaux 
    char** tableauCaractere = tableau2D(key_length);
    pthread_t tab_thread[key_length];
@@ -220,16 +216,10 @@ int break_code_c1(const char* infile, unsigned int key_length, const char* outpu
 
     // Création des clefs possible
     int nb_combinaisons = 0;
-    int ligne_10 = 0;
     char** combinaisons = clef_candidates(tableauCaractere, key_length, &nb_combinaisons);
 
     // Affichage des combinaisons générées
     for (int i = 0; i < nb_combinaisons; i++) {
-        if (ligne_10 == 10){
-            fprintf(output, "%c",'\n');
-            ligne_10 = 0;
-        } 
-
         fprintf(output, "%s, ",combinaisons[i]);    
         free(combinaisons[i]);
     }
@@ -237,16 +227,18 @@ int break_code_c1(const char* infile, unsigned int key_length, const char* outpu
     // Free memoire
     free(combinaisons); 
     fclose(output);
-    printf("Fichier de clés candidates généré : %s\n", output_filename);
+    printf("%d clef(s) générée(s) dans le Fichier : %s\n", nb_combinaisons, output_filename);
 
     return 0;
 }
 
 // int main(int argc, char *argv[]) {
-//     unsigned int clef_len = 3;
+
+//     char* input_file = "1234_msg2.txt";
+//     unsigned int clef_len = 4;
 //     const char* output_filename = "key_candidates.bin";
 
 //     printf("Running C1 attack...\n");
-//     break_code_c1(, clef_len, output_filename);
+//     break_code_c1(input_file, clef_len, output_filename);
 //     return 0;
 // }

@@ -9,6 +9,19 @@
 /* ============================================================================== */
 /* ============================================================================== */
 
+// double english_freq[26] = {
+//     0.082, 0.015, 0.028, 0.043, 0.127, 0.022, 0.020, 0.061,
+//     0.070, 0.0015, 0.0077, 0.040, 0.024, 0.067, 0.075, 0.019,
+//     0.00095, 0.060, 0.063, 0.090, 0.028, 0.0098, 0.024, 0.0015,
+//     0.020, 0.00074
+// };
+
+const double french_fq[26] = {
+    0.1467, 0.0764, 0.0326, 0.0367, 0.1470, 0.0107, 0.0087, 0.0074, 
+    0.0753, 0.0061, 0.0005, 0.0546, 0.0297, 0.0701, 0.0574, 0.0253, 
+    0.0136, 0.0669, 0.0793, 0.0724, 0.0631, 0.0184, 0.0003, 0.0044, 
+    0.003, 0.0012
+};
 
 // Main de la partie Crack
 //
@@ -16,10 +29,10 @@ int main(int argc, char* argv[]){
     
     /* Necessary variables for the program */
     unsigned int key;
-    char* fich_in;
-    const char* output_filename;
-    char* methode_crypt; 
-    char* dico;
+    char* fich_in = NULL;
+    const char* output_filename = NULL;
+    char* methode_crypt = NULL; 
+    char* dico = NULL;
     
     char optstring[] = ":i:o:m:k:d:l:h";
     int opt; 
@@ -74,20 +87,32 @@ int main(int argc, char* argv[]){
         }  
     }  
 
+    // Verification bon paramètres
+    if (!key || !fich_in || !output_filename || !methode_crypt){
+        perror("Il manque des arguments");
+        exit(EXIT_FAILURE);
+    }
+
     // Execute le crack C1
     if (strcmp(methode_crypt, "c1") == 0){
 
-        printf("debut crack c1\n");
+        printf("~~~ Running C1 Attack... ~~~\n\n");
 
         break_code_c1(fich_in, key, output_filename);
 
     // Realise l'ensemble des 3 cracks
-    } else {
-        printf("debut crack c1\n");
+    } else if (strcmp(methode_crypt, "all") == 0){
+        
+        printf("~~~ Running C1 Attack... ~~~\n\n");
         break_code_c1(fich_in, key, output_filename);
 
-        printf("debut crack c2\n");
-        //break_code_c1(fich_in, key, output_filename);
+        printf("~~~ Running C2 Attack... ~~~\n\n");
+        break_code_c2(fich_in, key, french_fq);
+
+        printf("~~~ Running C3 Attack... ~~~\n\n");
+        //break_code_c2(fich_in, key, french_fq);
+    } else {
+        fprintf(stderr,"Erreur, la méthode choisie n'existe pas.\n");
     }
 
     /* End of the program */

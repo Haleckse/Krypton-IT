@@ -17,11 +17,11 @@ int main(int argc, char* argv[]){
     //printf("\n--- début programme ---\n");
 
     /* Necessary variables for the program */
-    unsigned char* key;
+    unsigned char* key = NULL;
     char* nom;
-    char* fich_in; char* fich_out;
-    char* methode_crypt; 
-    char* fich_vecteur;
+    char* fich_in = NULL; char* fich_out = NULL;
+    char* methode_crypt = NULL; 
+    char* fich_vecteur = NULL;
     
     char optstring[] = ":i:o:k:f:m:v:l:h";
     int opt; 
@@ -115,8 +115,8 @@ int main(int argc, char* argv[]){
     } else {
         
         /* check if all mandatories variables are here */
-        if (!fich_in || !fich_out || !methode_crypt){
-            fprintf(stderr,"erreur, il manque un argument obligatoire;\n");
+        if (!fich_in || !fich_out || !methode_crypt || !key){
+            fprintf(stderr,"erreur, il manque un argument obligatoire !\n");
             exit(EXIT_FAILURE);
         }
 

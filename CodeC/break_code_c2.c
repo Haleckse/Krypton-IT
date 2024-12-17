@@ -1,144 +1,252 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
 
+#include "break_code.h"
+
 #define ASCII_PRINTABLE_START 32
 #define ASCII_PRINTABLE_END 126
 
+// Check si la chaîne de caractère "text" est bien composée de caractères ASCII
+// Retourne 1 si valide, 0 sinon
+//
 int is_valid_text(const char *text, int length) {
     for (int i = 0; i < length; i++) {
-        if (text[i] < ASCII_PRINTABLE_START || text[i] > ASCII_PRINTABLE_END) {
-            return 0;
+        if ((text[i] < ASCII_PRINTABLE_START || text[i] > ASCII_PRINTABLE_END) && text[i] != '\n') {
+            return 0; // Texte invalide
         }
     }
     return 1;
 }   
 
-char **read_key_candidates_from_file(const char *filename, int key_length, int *num_candidates) {
-    FILE *file = fopen(filename, "rb");
+// Lit l'intégralité des clefs candidates contenues dans le fichier "filename"
+// Retrourne un tableau contenant toutes les clefs
+//
+char** read_key_candidates_from_file(const char *filename, int key_length, int* total_candidate_length) {
+    // Fichier contenant les clefs candidates
+    FILE* file = fopen(filename, "rb");
+
+    // Traitement erreur ouverture fichier 
     if (!file) {
         perror("Erreur d'ouverture du fichier");
         return NULL;
     }
 
-    char **key_candidates = malloc(sizeof(char *) * key_length);
-    for (int i = 0; i < key_length; i++) {
-        key_candidates[i] = malloc(ASCII_PRINTABLE_END - ASCII_PRINTABLE_START + 1);
+    // Taille totale du fichier 
+    fseek(file, 0, SEEK_END);
+    *total_candidate_length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    // Nombre de clef(s) candidate(s)
+    *total_candidate_length = *total_candidate_length/(key_length+2); // (+2) car ',' et ' '
+    printf("Nombres de clefs candidates : %d\n",*total_candidate_length);
+
+    // Tableau qui contiendra l'ensemble des clefs candidates
+    char** key_candidates = malloc(*total_candidate_length * sizeof(char*));
+    if (!key_candidates) {
+        perror("Erreur allocation mémoire clef candidates C2");
+        fclose(file);
+        return NULL;
     }
 
-    int line_number = 0;
-    while (line_number < key_length) {
-        for (int i = 0; i < (ASCII_PRINTABLE_END - ASCII_PRINTABLE_START + 1); i++) {
-            unsigned char byte;
-            if (fread(&byte, sizeof(unsigned char), 1, file) != 1) {
-                break;
-            }
-            key_candidates[line_number][i] = byte;
+    // Remplissage du tableau
+    for (int i = 0; i < *total_candidate_length; i++) {
+        // Allocation m�moire pour chaque clef
+        key_candidates[i] = malloc((key_length + 1) * sizeof(char)); // (+1) pour '\0'
+        
+        // Traitement erreurs et lecture des clefs
+        if (!key_candidates[i] || fread(key_candidates[i], 1, key_length, file) != key_length) {
+            perror("Erreur lecture clef candidate C2");
+            fclose(file);
+            return NULL;
         }
-        line_number++;
+
+        // Termine la cha�ne par '\0'
+        key_candidates[i][key_length] = '\0';
+
+        // Avance la lecture fichier de 2
+        fseek(file, 2, SEEK_CUR);
     }
 
     fclose(file);
-    *num_candidates = line_number;
     return key_candidates;
 }
 
-const double FREQ_TH_FR[26] = {0.1467, 0.0764, 0.0326, 0.0367, 0.1470, 0.0107, 0.0087, 0.0074, 
-                               0.0753, 0.0061, 0.0005, 0.0546, 0.0297, 0.0701, 0.0574, 0.0253, 
-                               0.0136, 0.0669, 0.0793, 0.0724, 0.0631, 0.0184, 0.0003, 0.0044, 
-                               0.003, 0.0012};
-
-void calculate_frequencies(const char *text, int length, double *freq) {
-    int count[26] = {0};
-    int total = 0;
+// Calcul la fréquence d'apparition de caractères alphabétiques dans un texte
+// Tableau retourné dans la variable "freq"
+//
+void calculate_frequencies(const char *text, int length, double *frequence) {
+    memset(frequence, 0, 26 * sizeof(double));
+    int total_alpha = 0;
 
     for (int i = 0; i < length; i++) {
         if (isalpha(text[i])) {
-            count[tolower(text[i]) - 'a']++;
-            total++;
+            int index = tolower(text[i]) - 'a';
+            frequence[index]++;
+            total_alpha ++;
         }
     }
 
+    // Normalize frequencies
     for (int i = 0; i < 26; i++) {
-        freq[i] = (total > 0) ? (double)count[i] / total : 0.0;
+        if (total_alpha > 0) {
+            frequence[i] /= total_alpha;
+        }
     }
 }
 
+// Calcul la distance entre la fréquence globale et celle calculée à la fonction précédente
+// Retourne cette distance calculée
+//
 double calculate_distance(const double *freq_th, const double *freq) {
     double distance = 0.0;
     for (int i = 0; i < 26; i++) {
-        distance += pow(freq_th[i] - freq[i], 2);
+        distance += pow(freq[i] - freq_th[i], 2);
     }
     return distance;
 }
 
-void generate_dictionnary(const char *filename, char **key_candidates, int key_length, int num_candidates) {
-    FILE *file = fopen(filename, "w");
-    if (!file) {
-        perror("Erreur d'ouverture du fichier de dictionnaire");
+// Trie par ordre décroissant les différentes clefs 
+// Retourne un tableau triée 
+//
+char** sort_ascending(char** keys, int num_keys) {
+    int ind = 0;
+    char** sorted_keys = malloc(sizeof(char) * num_keys);
+
+    for (int i = (num_keys-1); i >= 0; i--) {
+        sorted_keys[ind++] = keys[i];
+    }
+
+    return sorted_keys;
+}
+
+// Affiche sur STDOUT les différentes clefs possibles
+//
+void affichage_clefs(int index, char **potential_keys){
+    for (int i = 0; i < index; i++){
+        printf("%s", potential_keys[i]);
+        if (i!= index-1)
+            printf(", ");
+    }
+    printf("\n");
+}
+
+// Execute le crack C2
+//
+void break_code_c2(const char* cyphered_file, int key_length, const double* freq_th) {
+    int num_candidates;
+    double freq[26];
+    int index = 0; int trouve = 0;
+    double min_distance = INFINITY;
+    char best_key[key_length];
+    
+    // Ouverture fichier input
+    FILE* input_file = fopen(cyphered_file, "rb");
+    if(!input_file){
+        perror("ouverture fichier input c2");
         return;
     }
 
-    for (int i = 0; i < num_candidates; i++) {
-        for (int j = 0; j < (ASCII_PRINTABLE_END - ASCII_PRINTABLE_START + 1); j++) {
-            fprintf(file, "%c", key_candidates[i][j]);
-        }
-        fprintf(file, "\n");
+    // Taille du fichier input
+    fseek(input_file, 0, SEEK_END);
+    int text_length = ftell(input_file);
+    fseek(input_file, 0, SEEK_SET);
+
+    // Lecture du fichier
+    char *buffer = malloc(text_length * sizeof(char));
+    if (fread(buffer, 1, text_length, input_file) != text_length){
+        perror("erreur lecture C2");
+        fclose(input_file);
+        exit(EXIT_FAILURE);
     }
+    fclose(input_file);
 
-    fclose(file);
-}
-
-void break_code_c2(const char *ciphered_text, int text_length, int key_length, const double *freq_th) {
-    char *best_key = malloc((key_length + 1) * sizeof(char));
-    double min_distance = INFINITY;
-    int num_candidates;
-
-    char **key_candidates = read_key_candidates_from_file("key_candidates.bin", key_length, &num_candidates);
-
-    for (int k = 0; k < key_length; k++) {
-        double current_distance = 0.0;
-        char decrypted_text[text_length + 1];
-
-        for (int i = 0; i < text_length; i++) {
-            decrypted_text[i] = ciphered_text[i] ^ key_candidates[k][i % key_length];
+    // Recup�ration des clefs candidates
+    char** key_candidates = read_key_candidates_from_file("key_candidates.bin", key_length, &num_candidates);
+    char *decrypted_text = malloc((text_length + 1) * sizeof(char));
+    char** potential_keys = malloc(sizeof(char) * num_candidates);
+    
+    for (int k = 0; k < num_candidates; k++) {
+        // XOR dechiffrement
+        for(int i=0; i<text_length;i++){
+            decrypted_text[i] = buffer[i] ^ key_candidates[k][i%key_length];
         }
+
+        // Ajout du caractère de fin
         decrypted_text[text_length] = '\0';
 
-        double freq[26] = {0.0};
-        calculate_frequencies(decrypted_text, text_length, freq);
+        if (is_valid_text(decrypted_text, text_length)) {
 
-        current_distance = calculate_distance(freq_th, freq);
+            // Calculer la fréquences et la distance
+            calculate_frequencies(decrypted_text, text_length, freq);
+            double distance = calculate_distance(freq_th, freq);
 
-        if (current_distance < min_distance) {
-            min_distance = current_distance;
-            strncpy(best_key, key_candidates[k], key_length);
+            // Check si la distance est celle minimale
+            if (distance < min_distance) {
+                trouve = 1;
+                min_distance = distance;
+
+                // Debug
+                //printf("clef : %s dist : %f\n", key_candidates[k], distance);
+                
+                // Ajout et sauvegarde de la meilleure clef
+                strncpy(best_key, key_candidates[k], key_length);
+                best_key[key_length] = '\0';
+
+                // Ajout des clefs candidates possibles dans un dico
+                potential_keys[index] = malloc(key_length+1);
+                strncpy(potential_keys[index], best_key, key_length+1);
+                index++;
+            }
         }
     }
 
-    best_key[key_length] = '\0';
+    // Une clef à été trouvée
+    if (trouve) {
+        printf("Meilleure clé : %s\n", best_key);
+    
+    // Aucune clef trouvée
+    } else {
+        printf("Pas de clef valide trouvée pour C2.\n");
+    }
 
-    printf("Meilleure clé : %s\n", best_key);
+    // Libération mémoire et fermeture fichiers
+    for (int i = 0; i < num_candidates; i++) {
+        free(key_candidates[i]);
+    }
+    free(key_candidates);
+    free(buffer);
+    free(decrypted_text);
 
-    generate_dictionnary("dictionnaire.txt", key_candidates, key_length, num_candidates);
+    //Debugging : Print distances and keys array before and after being sorted
+    printf("\nClefs non-triées : ");
+    affichage_clefs(index, potential_keys);
+
+    potential_keys = sort_ascending(potential_keys, index);
+
+    printf("Clefs triées : ");
+    affichage_clefs(index, potential_keys);
+
+    // Libération mémoire du dictionnaire
+    for(int i=0; i<index; i++){
+        free(potential_keys[i]);
+    }
 }
 
+// int main(int argc, char* argv[]) {
+//     if(argc != 1){
+//         perror("Manque des arguments");
+//         exit(EXIT_FAILURE);
+//     }
 
-// int main() {
-//     const char *ciphered_text = "\x4f\x52\x53\x51";
-//     int text_length = strlen(ciphered_text);
-//     int key_length = 3;
+//     char* input = "1234_msg2.txt";
+//     int key_length = 4;
 
-//     break_code_c2(ciphered_text, text_length, key_length, FREQ_TH_FR);
+//     printf("~~~ Running C2 Attack... ~~~\n\n");
 
-
-//     // for (int i = 0; i < key_length; i++) {
-//     //     free(candidates[i]);
-//     // }
-//     // free(candidates);
-//     // free(best_key);
+//     break_code_c2(input, key_length, french_freq);
 
 //     return 0;
 // }
